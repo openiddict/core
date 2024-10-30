@@ -660,6 +660,182 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in Tokens
+                                     where token.Application!.Id!.Equals(key) && token.Subject == subject
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in Tokens
+                                     where token.Application!.Id!.Equals(key) &&
+                                           token.Subject == subject &&
+                                           token.Status == status
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in Tokens
+                                     where token.Application!.Id!.Equals(key) &&
+                                           token.Subject == subject &&
+                                           token.Status == status &&
+                                           token.Type == type
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))

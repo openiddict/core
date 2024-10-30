@@ -178,9 +178,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this compiled query uses an explicit join before applying the equality check.
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -212,9 +213,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this compiled query uses an explicit join before applying the equality check.
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -252,9 +254,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this compiled query uses an explicit join before applying the equality check.
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(client);
@@ -276,9 +279,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-        // filtered using token.Application.Id.Equals(key). To work around this issue,
-        // this method is overridden to use an explicit join before applying the equality check.
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(identifier);
@@ -297,9 +301,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-        // filtered using token.Authorization.Id.Equals(key). To work around this issue,
-        // this method is overridden to use an explicit join before applying the equality check.
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Authorization.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
         var key = ConvertIdentifierFromString(identifier);
@@ -749,6 +754,243 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from token in Tokens
+                where token.Subject == subject && token.Application!.Id!.Equals(key)
+                select token).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    token => token.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        foreach (var token in await (from token in Tokens.AsTracking()
+                                     where token.Subject == subject
+                                     join application in Applications.AsTracking() on token.Application!.Id equals application.Id
+                                     where application.Id!.Equals(key)
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from token in Tokens
+                where token.Subject == subject && token.Status == status && token.Application!.Id!.Equals(key)
+                select token).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    token => token.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        foreach (var token in await (from token in Tokens.AsTracking()
+                                     where token.Subject == subject && token.Status == status
+                                     join application in Applications.AsTracking() on token.Application!.Id equals application.Id
+                                     where application.Id!.Equals(key)
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
+        }
+
+        var key = ConvertIdentifierFromString(client);
+
+#if SUPPORTS_BULK_DBSET_OPERATIONS
+        if (!Options.CurrentValue.DisableBulkOperations)
+        {
+            return await (
+                from token in Tokens
+                where token.Subject == subject &&
+                      token.Status == status &&
+                      token.Type == type &&
+                      token.Application!.Id!.Equals(key)
+                select token).ExecuteUpdateAsync(entity => entity.SetProperty(
+                    token => token.Status, Statuses.Revoked), cancellationToken);
+
+            // Note: calling DbContext.SaveChangesAsync() is not necessary
+            // with bulk update operations as they are executed immediately.
+        }
+#endif
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        foreach (var token in await (from token in Tokens.AsTracking()
+                                     where token.Subject == subject && token.Status == status && token.Type == type
+                                     join application in Applications.AsTracking() on token.Application!.Id equals application.Id
+                                     where application.Id!.Equals(key)
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= [];
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
@@ -775,8 +1017,15 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
-                                     where token.Application!.Id!.Equals(key)
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Application.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        foreach (var token in await (from token in Tokens.AsTracking()
+                                     join application in Applications.AsTracking() on token.Application!.Id equals application.Id
+                                     where application.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -835,8 +1084,15 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
-                                     where token.Authorization!.Id!.Equals(key)
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens
+        // can't be filtered using token.Authorization.Id.Equals(key). To work around
+        // this issue, this query uses use an explicit join to apply the equality check.
+        //
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        foreach (var token in await (from token in Tokens.AsTracking()
+                                     join authorization in Authorizations.AsTracking() on token.Authorization!.Id equals authorization.Id
+                                     where authorization.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
@@ -893,7 +1149,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
+        foreach (var token in await (from token in Tokens.AsTracking()
                                      where token.Subject == subject
                                      select token).ToListAsync(cancellationToken))
         {

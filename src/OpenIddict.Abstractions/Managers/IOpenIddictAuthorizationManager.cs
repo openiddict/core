@@ -395,6 +395,37 @@ public interface IOpenIddictAuthorizationManager
     ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Revokes all the authorizations corresponding to the specified
+    /// subject and associated with the application identifier.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes all the authorizations matching the specified parameters.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="status">The authorization status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes all the authorizations matching the specified parameters.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="status">The authorization status.</param>
+    /// <param name="type">The authorization type.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Revokes all the authorizations associated with the specified application identifier.
     /// </summary>
     /// <param name="identifier">The application identifier associated with the authorizations.</param>
