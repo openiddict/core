@@ -1029,6 +1029,91 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
         => Store.PruneAsync(threshold, cancellationToken);
 
     /// <summary>
+    /// Revokes all the authorizations corresponding to the specified
+    /// subject and associated with the application identifier.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        return Store.RevokeAsync(subject, client, cancellationToken);
+    }
+
+    /// <summary>
+    /// Revokes all the authorizations matching the specified parameters.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="status">The authorization status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        return Store.RevokeAsync(subject, client, status, cancellationToken);
+    }
+
+    /// <summary>
+    /// Revokes all the authorizations matching the specified parameters.
+    /// </summary>
+    /// <param name="subject">The subject associated with the authorization.</param>
+    /// <param name="client">The client associated with the authorization.</param>
+    /// <param name="status">The authorization status.</param>
+    /// <param name="type">The authorization type.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of authorizations corresponding to the criteria that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
+        }
+
+        return Store.RevokeAsync(subject, client, status, type, cancellationToken);
+    }
+
+    /// <summary>
     /// Revokes all the authorizations associated with the specified application identifier.
     /// </summary>
     /// <param name="identifier">The application identifier associated with the authorizations.</param>
@@ -1368,6 +1453,18 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <inheritdoc/>
     ValueTask<long> IOpenIddictAuthorizationManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         => PruneAsync(threshold, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictAuthorizationManager.RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+        => RevokeAsync(subject, client, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictAuthorizationManager.RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
+        => RevokeAsync(subject, client, status, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictAuthorizationManager.RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+        => RevokeAsync(subject, client, status, type, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<long> IOpenIddictAuthorizationManager.RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)

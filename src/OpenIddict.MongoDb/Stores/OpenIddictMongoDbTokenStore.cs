@@ -587,6 +587,95 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.ApplicationId == ObjectId.Parse(client) && token.Subject == subject,
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.ApplicationId == ObjectId.Parse(client) &&
+                                        token.Subject == subject &&
+                                        token.Status == status,
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(subject))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
+        }
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.ApplicationId == ObjectId.Parse(client) &&
+                                        token.Subject == subject &&
+                                        token.Status == status &&
+                                        token.Type == type,
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<long> RevokeByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
