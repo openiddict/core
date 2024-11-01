@@ -99,112 +99,38 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(string subject,
-        string client, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TToken> FindAsync(
+        string? subject, string? client,
+        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        IQueryable<TToken> query = collection.AsQueryable();
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(token => token.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            query = query.Where(token => token.ApplicationId == ObjectId.Parse(client));
         }
 
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        if (!string.IsNullOrEmpty(status))
         {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
-
-            await foreach (var token in collection.Find(token =>
-                token.ApplicationId == ObjectId.Parse(client) &&
-                token.Subject == subject).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return token;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(token => token.Status == status);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(type))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            query = query.Where(token => token.Type == type);
         }
 
-        if (string.IsNullOrEmpty(status))
+        await foreach (var token in query.ToAsyncEnumerable(cancellationToken))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
-
-            await foreach (var token in collection.Find(token =>
-                token.ApplicationId == ObjectId.Parse(client) &&
-                token.Subject == subject &&
-                token.Status == status).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return token;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
-
-            await foreach (var token in collection.Find(token =>
-                token.ApplicationId == ObjectId.Parse(client) &&
-                token.Subject == subject &&
-                token.Status == status &&
-                token.Type == type).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return token;
-            }
+            yield return token;
         }
     }
 
@@ -573,7 +499,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
                    where token.CreationDate < threshold.UtcDateTime
                    where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                           token.ExpirationDate < DateTime.UtcNow ||
-                          authorizations.Any(authorization => authorization.Status != Statuses.Valid)
+                          authorizations.Any(token => token.Status != Statuses.Valid)
                    select token.Id).ToListAsync(cancellationToken);
 
         // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
@@ -587,89 +513,35 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-        return (await collection.UpdateManyAsync(
-            filter           : token => token.ApplicationId == ObjectId.Parse(client) && token.Subject == subject,
-            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
-            options          : null,
-            cancellationToken: cancellationToken)).MatchedCount;
-    }
+        var filter = Builders<TToken>.Filter.Empty;
 
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            filter &= Builders<TToken>.Filter.Where(token => token.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            filter &= Builders<TToken>.Filter.Where(token => token.ApplicationId == ObjectId.Parse(client));
         }
 
-        if (string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(status))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+            filter &= Builders<TToken>.Filter.Where(token => token.Status == status);
         }
 
-        var database = await Context.GetDatabaseAsync(cancellationToken);
-        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+        if (!string.IsNullOrEmpty(type))
+        {
+            filter &= Builders<TToken>.Filter.Where(token => token.Type == type);
+        }
 
         return (await collection.UpdateManyAsync(
-            filter           : token => token.ApplicationId == ObjectId.Parse(client) &&
-                                        token.Subject == subject &&
-                                        token.Status == status,
-            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
-            options          : null,
-            cancellationToken: cancellationToken)).MatchedCount;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var database = await Context.GetDatabaseAsync(cancellationToken);
-        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
-
-        return (await collection.UpdateManyAsync(
-            filter           : token => token.ApplicationId == ObjectId.Parse(client) &&
-                                        token.Subject == subject &&
-                                        token.Status == status &&
-                                        token.Type == type,
+            filter           : filter,
             update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
             options          : null,
             cancellationToken: cancellationToken)).MatchedCount;

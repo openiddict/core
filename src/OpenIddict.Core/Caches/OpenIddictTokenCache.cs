@@ -46,30 +46,6 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
 
         _cache.Remove(new
         {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(token, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(token, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(token, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(token, cancellationToken),
-            Status = await _store.GetStatusAsync(token, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(token, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(token, cancellationToken),
-            Status = await _store.GetStatusAsync(token, cancellationToken),
-            Type = await _store.GetTypeAsync(token, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
             Method = nameof(FindByApplicationIdAsync),
             Identifier = await _store.GetApplicationIdAsync(token, cancellationToken)
         });
@@ -123,165 +99,17 @@ public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TToken> FindAsync(string subject, string client, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<TToken> FindAsync(
+        string? subject, string? client,
+        string? status, string? type, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        // Note: this method is only partially cached.
+
+        await foreach (var token in _store.FindAsync(subject, client, status, type, cancellationToken))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
+            await AddAsync(token, cancellationToken);
 
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
-            {
-                var builder = ImmutableArray.CreateBuilder<TToken>();
-
-                await foreach (var token in _store.FindAsync(subject, client, cancellationToken))
-                {
-                    builder.Add(token);
-
-                    await AddAsync(token, cancellationToken);
-                }
-
-                tokens = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, tokens, cancellationToken);
-            }
-
-            foreach (var token in tokens)
-            {
-                yield return token;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
-            {
-                var builder = ImmutableArray.CreateBuilder<TToken>();
-
-                await foreach (var token in _store.FindAsync(subject, client, status, cancellationToken))
-                {
-                    builder.Add(token);
-
-                    await AddAsync(token, cancellationToken);
-                }
-
-                tokens = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, tokens, cancellationToken);
-            }
-
-            foreach (var token in tokens)
-            {
-                yield return token;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status,
-                Type = type
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
-            {
-                var builder = ImmutableArray.CreateBuilder<TToken>();
-
-                await foreach (var token in _store.FindAsync(subject, client, status, type, cancellationToken))
-                {
-                    builder.Add(token);
-
-                    await AddAsync(token, cancellationToken);
-                }
-
-                tokens = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, tokens, cancellationToken);
-            }
-
-            foreach (var token in tokens)
-            {
-                yield return token;
-            }
+            yield return token;
         }
     }
 

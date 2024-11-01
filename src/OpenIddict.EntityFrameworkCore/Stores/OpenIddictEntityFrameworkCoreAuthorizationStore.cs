@@ -241,165 +241,50 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TAuthorization> FindAsync(
+        string? subject, string? client,
+        string? status, string? type,
+        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TAuthorization> query = Authorizations.Include(authorization => authorization.Application).AsTracking();
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
-                where authorization.Subject == subject
-                join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                where application.Id!.Equals(key)
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
-                where authorization.Subject == subject && authorization.Status == status
-                join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                where application.Id!.Equals(key)
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
-                where authorization.Subject == subject &&
-                      authorization.Status == status &&
-                      authorization.Type == type
-                join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                where application.Id!.Equals(key)
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type,
-        ImmutableArray<string> scopes, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        if (!string.IsNullOrEmpty(client))
         {
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
             // can't be filtered using authorization.Application.Id.Equals(key). To work around
             // this issue, this query uses use an explicit join to apply the equality check.
             //
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
             var key = ConvertIdentifierFromString(client);
 
-            var authorizations = (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
-                                  where authorization.Subject == subject &&
-                                        authorization.Status == status &&
-                                        authorization.Type == type
-                                  join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                                  where application.Id!.Equals(key)
-                                  select authorization).AsAsyncEnumerable(cancellationToken);
+            query = from authorization in query
+                    join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
+                    where application.Id!.Equals(key)
+                    select authorization;
+        }
 
-            await foreach (var authorization in authorizations)
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(authorization => authorization.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            query = query.Where(authorization => authorization.Type == type);
+        }
+
+        await foreach (var authorization in query.AsAsyncEnumerable(cancellationToken))
+        {
+            if (scopes is null || (await GetScopesAsync(authorization, cancellationToken))
+                .ToHashSet(StringComparer.Ordinal)
+                .IsSupersetOf(scopes))
             {
-                if ((await GetScopesAsync(authorization, cancellationToken))
-                    .ToHashSet(StringComparer.Ordinal)
-                    .IsSupersetOf(scopes))
-                {
-                    yield return authorization;
-                }
+                yield return authorization;
             }
         }
     }
@@ -805,28 +690,47 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TAuthorization> query = Options.CurrentValue.DisableBulkOperations ?
+            Authorizations.Include(authorization => authorization.Application).AsTracking() :
+            Authorizations;
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
+            // can't be filtered using authorization.Application.Id.Equals(key). To work around
+            // this issue, this query uses use an explicit join to apply the equality check.
+            //
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            var key = ConvertIdentifierFromString(client);
+
+            query = from authorization in query
+                    join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
+                    where application.Id!.Equals(key)
+                    select authorization;
         }
 
-        var key = ConvertIdentifierFromString(client);
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(authorization => authorization.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            query = query.Where(authorization => authorization.Type == type);
+        }
 
 #if SUPPORTS_BULK_DBSET_OPERATIONS
         if (!Options.CurrentValue.DisableBulkOperations)
         {
-            return await (
-                from authorization in Authorizations
-                where authorization.Subject == subject && authorization.Application!.Id!.Equals(key)
-                select authorization).ExecuteUpdateAsync(entity => entity.SetProperty(
-                    authorization => authorization.Status, Statuses.Revoked), cancellationToken);
+            return await query.ExecuteUpdateAsync(entity => entity.SetProperty(
+                authorization => authorization.Status, Statuses.Revoked), cancellationToken);
 
             // Note: calling DbContext.SaveChangesAsync() is not necessary
             // with bulk update operations as they are executed immediately.
@@ -842,177 +746,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        foreach (var authorization in await (from authorization in Authorizations.AsTracking()
-                                             where authorization.Subject == subject
-                                             join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                                             where application.Id!.Equals(key)
-                                             select authorization).ToListAsync(cancellationToken))
-        {
-            authorization.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(authorization).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-#if SUPPORTS_BULK_DBSET_OPERATIONS
-        if (!Options.CurrentValue.DisableBulkOperations)
-        {
-            return await (
-                from authorization in Authorizations
-                where authorization.Subject == subject &&
-                      authorization.Status == status &&
-                      authorization.Application!.Id!.Equals(key)
-                select authorization).ExecuteUpdateAsync(entity => entity.SetProperty(
-                    authorization => authorization.Status, Statuses.Revoked), cancellationToken);
-
-            // Note: calling DbContext.SaveChangesAsync() is not necessary
-            // with bulk update operations as they are executed immediately.
-        }
-#endif
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        foreach (var authorization in await (from authorization in Authorizations.AsTracking()
-                                             where authorization.Subject == subject && authorization.Status == status
-                                             join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                                             where application.Id!.Equals(key)
-                                             select authorization).ToListAsync(cancellationToken))
-        {
-            authorization.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(authorization).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-#if SUPPORTS_BULK_DBSET_OPERATIONS
-        if (!Options.CurrentValue.DisableBulkOperations)
-        {
-            return await (
-                from authorization in Authorizations
-                where authorization.Subject == subject &&
-                      authorization.Status == status &&
-                      authorization.Type == type &&
-                      authorization.Application!.Id!.Equals(key)
-                select authorization).ExecuteUpdateAsync(entity => entity.SetProperty(
-                    authorization => authorization.Status, Statuses.Revoked), cancellationToken);
-
-            // Note: calling DbContext.SaveChangesAsync() is not necessary
-            // with bulk update operations as they are executed immediately.
-        }
-#endif
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        // Note: due to a bug in Entity Framework Core's query visitor, the authorizations
-        // can't be filtered using authorization.Application.Id.Equals(key). To work around
-        // this issue, this query uses use an explicit join to apply the equality check.
-        //
-        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-
-        foreach (var authorization in await (from authorization in Authorizations.AsTracking()
-                                             where authorization.Subject == subject && authorization.Status == status && authorization.Type == type
-                                             join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                                             where application.Id!.Equals(key)
-                                             select authorization).ToListAsync(cancellationToken))
+        foreach (var authorization in await query.ToListAsync(cancellationToken))
         {
             authorization.Status = Statuses.Revoked;
 
@@ -1076,7 +810,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
         //
         // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        foreach (var authorization in await (from authorization in Authorizations.AsTracking()
+        foreach (var authorization in await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
                                              join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                                              where application.Id!.Equals(key)
                                              select authorization).ToListAsync(cancellationToken))
@@ -1135,7 +869,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         var result = 0L;
 
-        foreach (var authorization in await (from authorization in Authorizations.AsTracking()
+        foreach (var authorization in await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
                                              where authorization.Subject == subject
                                              select authorization).ToListAsync(cancellationToken))
         {

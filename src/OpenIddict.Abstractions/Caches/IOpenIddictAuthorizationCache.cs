@@ -23,51 +23,18 @@ public interface IOpenIddictAuthorizationCache<TAuthorization> where TAuthorizat
     ValueTask AddAsync(TAuthorization authorization, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves the authorizations corresponding to the specified
-    /// subject and associated with the application identifier.
-    /// </summary>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The authorizations corresponding to the subject/client.</returns>
-    IAsyncEnumerable<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Retrieves the authorizations matching the specified parameters.
     /// </summary>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="status">The authorization status.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The authorizations corresponding to the criteria.</returns>
-    IAsyncEnumerable<TAuthorization> FindAsync(string subject, string client, string status, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Retrieves the authorizations matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="status">The authorization status.</param>
-    /// <param name="type">The authorization type.</param>
+    /// <param name="subject">The subject associated with the authorization, or <see langword="null"/> not to filter out specific subjects.</param>
+    /// <param name="client">The client associated with the authorization, or <see langword="null"/> not to filter out specific clients.</param>
+    /// <param name="status">The authorization status, or <see langword="null"/> not to filter out specific authorization statuses.</param>
+    /// <param name="type">The authorization type, or <see langword="null"/> not to filter out specific authorization types.</param>
+    /// <param name="scopes">The minimal scopes associated with the authorization, or <see langword="null"/> not to filter out scopes.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The authorizations corresponding to the criteria.</returns>
     IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client, string status,
-        string type, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Retrieves the authorizations matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the authorization.</param>
-    /// <param name="client">The client associated with the authorization.</param>
-    /// <param name="status">The authorization status.</param>
-    /// <param name="type">The authorization type.</param>
-    /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The authorizations corresponding to the criteria.</returns>
-    IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client, string status,
-        string type, ImmutableArray<string> scopes, CancellationToken cancellationToken);
+        string? subject, string? client, string? status,
+        string? type, ImmutableArray<string>? scopes, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the list of authorizations corresponding to the specified application identifier.

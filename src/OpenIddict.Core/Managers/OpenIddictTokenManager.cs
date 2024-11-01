@@ -206,140 +206,18 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
-    /// Retrieves the tokens corresponding to the specified
-    /// subject and associated with the application identifier.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The tokens corresponding to the subject/client.</returns>
-    public virtual IAsyncEnumerable<TToken> FindAsync(string subject,
-        string client, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindAsync(subject, client, cancellationToken) :
-            Cache.FindAsync(subject, client, cancellationToken);
-
-        if (Options.CurrentValue.DisableAdditionalFiltering)
-        {
-            return tokens;
-        }
-
-        // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-        // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-        // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var token in tokens)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    yield return token;
-                }
-            }
-        }
-    }
-
-    /// <summary>
     /// Retrieves the tokens matching the specified parameters.
     /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The tokens corresponding to the criteria.</returns>
-    public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        var tokens = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindAsync(subject, client, status, cancellationToken) :
-            Cache.FindAsync(subject, client, status, cancellationToken);
-
-        if (Options.CurrentValue.DisableAdditionalFiltering)
-        {
-            return tokens;
-        }
-
-        // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-        // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-        // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var token in tokens)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    yield return token;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Retrieves the tokens matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
-    /// <param name="type">The token type.</param>
+    /// <param name="subject">The subject associated with the token, or <see langword="null"/> not to filter out specific subjects.</param>
+    /// <param name="client">The client associated with the token, or <see langword="null"/> not to filter out specific clients.</param>
+    /// <param name="status">The token status, or <see langword="null"/> not to filter out specific token statuses.</param>
+    /// <param name="type">The token type, or <see langword="null"/> not to filter out specific token types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>Tokens corresponding to the criteria.</returns>
     public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken = default)
+        string? subject, string? client,
+        string? status, string? type, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
         var tokens = Options.CurrentValue.DisableEntityCaching ?
             Store.FindAsync(subject, client, status, type, cancellationToken) :
             Cache.FindAsync(subject, client, status, type, cancellationToken);
@@ -359,7 +237,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         {
             await foreach (var token in tokens)
             {
-                if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(subject) ||
+                    string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
                 {
                     yield return token;
                 }
@@ -1056,89 +935,16 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => Store.PruneAsync(threshold, cancellationToken);
 
     /// <summary>
-    /// Revokes all the tokens corresponding to the specified
-    /// subject and associated with the application identifier.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    public virtual ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        return Store.RevokeAsync(subject, client, cancellationToken);
-    }
-
-    /// <summary>
     /// Revokes all the tokens matching the specified parameters.
     /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
+    /// <param name="subject">The subject associated with the token, or <see langword="null"/> not to filter out specific subjects.</param>
+    /// <param name="client">The client associated with the token, or <see langword="null"/> not to filter out specific clients.</param>
+    /// <param name="status">The token status, or <see langword="null"/> not to filter out specific token statuses.</param>
+    /// <param name="type">The token type, or <see langword="null"/> not to filter out specific token types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    public virtual ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        return Store.RevokeAsync(subject, client, status, cancellationToken);
-    }
-
-    /// <summary>
-    /// Revokes all the tokens matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
-    /// <param name="type">The token type.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    public virtual ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return Store.RevokeAsync(subject, client, status, type, cancellationToken);
-    }
+    public virtual ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken = default)
+        => Store.RevokeAsync(subject, client, status, type, cancellationToken);
 
     /// <summary>
     /// Revokes all the tokens associated with the specified application identifier.
@@ -1495,15 +1301,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => DeleteAsync((TToken) token, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
-        => FindAsync(subject, client, cancellationToken);
-
-    /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
-        => FindAsync(subject, client, status, cancellationToken);
-
-    /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+    IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
         => FindAsync(subject, client, status, type, cancellationToken);
 
     /// <inheritdoc/>
@@ -1619,15 +1417,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => PruneAsync(threshold, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<long> IOpenIddictTokenManager.RevokeAsync(string subject, string client, CancellationToken cancellationToken)
-        => RevokeAsync(subject, client, cancellationToken);
-
-    /// <inheritdoc/>
-    ValueTask<long> IOpenIddictTokenManager.RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-        => RevokeAsync(subject, client, status, cancellationToken);
-
-    /// <inheritdoc/>
-    ValueTask<long> IOpenIddictTokenManager.RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+    ValueTask<long> IOpenIddictTokenManager.RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
         => RevokeAsync(subject, client, status, type, cancellationToken);
 
     /// <inheritdoc/>

@@ -170,138 +170,42 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TAuthorization> FindAsync(
+        string? subject, string? client,
+        string? status, string? type,
+        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TAuthorization> query = Authorizations.Include(authorization => authorization.Application);
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                where authorization.Application!.Id!.Equals(key) &&
-                      authorization.Subject == subject
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                where authorization.Application!.Id!.Equals(key) &&
-                      authorization.Subject == subject &&
-                      authorization.Status == status
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                where authorization.Application!.Id!.Equals(key) &&
-                      authorization.Subject == subject &&
-                      authorization.Status == status &&
-                      authorization.Type == type
-                select authorization).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type,
-        ImmutableArray<string> scopes, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        if (!string.IsNullOrEmpty(client))
         {
             var key = ConvertIdentifierFromString(client);
 
-            var authorizations = (from authorization in Authorizations.Include(authorization => authorization.Application)
-                                  where authorization.Application!.Id!.Equals(key) &&
-                                        authorization.Subject == subject &&
-                                        authorization.Status == status &&
-                                        authorization.Type == type
-                                  select authorization).AsAsyncEnumerable(cancellationToken);
+            query = query.Where(authorization => authorization.Application!.Id!.Equals(key));
+        }
 
-            await foreach (var authorization in authorizations)
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(authorization => authorization.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            query = query.Where(authorization => authorization.Type == type);
+        }
+
+        await foreach (var authorization in query.AsAsyncEnumerable(cancellationToken))
+        {
+            if (scopes is null || (await GetScopesAsync(authorization, cancellationToken))
+                .ToHashSet(StringComparer.Ordinal)
+                .IsSupersetOf(scopes))
             {
-                if ((await GetScopesAsync(authorization, cancellationToken))
-                    .ToHashSet(StringComparer.Ordinal)
-                    .IsSupersetOf(scopes))
-                {
-                    yield return authorization;
-                }
+                yield return authorization;
             }
         }
     }
@@ -659,151 +563,37 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TAuthorization> query = Authorizations.Include(authorization => authorization.Application);
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            var key = ConvertIdentifierFromString(client);
+
+            query = query.Where(authorization => authorization.Application!.Id!.Equals(key));
         }
 
-        var key = ConvertIdentifierFromString(client);
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(authorization => authorization.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            query = query.Where(authorization => authorization.Type == type);
+        }
 
         List<Exception>? exceptions = null;
 
         var result = 0L;
 
-        foreach (var authorization in await (from authorization in Authorizations
-                                             where authorization.Application!.Id!.Equals(key) && authorization.Subject == subject
-                                             select authorization).ToListAsync(cancellationToken))
-        {
-            authorization.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(authorization).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        foreach (var authorization in await (from authorization in Authorizations
-                                             where authorization.Application!.Id!.Equals(key) &&
-                                                   authorization.Subject == subject &&
-                                                   authorization.Status == status
-                                             select authorization).ToListAsync(cancellationToken))
-        {
-            authorization.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(authorization).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        foreach (var authorization in await (from authorization in Authorizations
-                                             where authorization.Application!.Id!.Equals(key) &&
-                                                   authorization.Subject == subject &&
-                                                   authorization.Status == status &&
-                                                   authorization.Type == type
-                                             select authorization).ToListAsync(cancellationToken))
+        foreach (var authorization in await query.ToListAsync(cancellationToken))
         {
             authorization.Status = Statuses.Revoked;
 
@@ -848,7 +638,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
         var result = 0L;
 
-        foreach (var authorization in await (from authorization in Authorizations
+        foreach (var authorization in await (from authorization in Authorizations.Include(authorization => authorization.Application)
                                              where authorization.Application!.Id!.Equals(key)
                                              select authorization).ToListAsync(cancellationToken))
         {
@@ -893,7 +683,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
         var result = 0L;
 
-        foreach (var authorization in await (from authorization in Authorizations
+        foreach (var authorization in await (from authorization in Authorizations.Include(authorization => authorization.Application)
                                              where authorization.Subject == subject
                                              select authorization).ToListAsync(cancellationToken))
         {

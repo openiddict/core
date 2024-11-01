@@ -146,89 +146,35 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(string subject,
-        string client, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
-                where token.Application!.Id!.Equals(key) &&
-                      token.Subject == subject
-                select token).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
+        string? subject, string? client,
+        string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TToken> query = Tokens.Include(token => token.Application).Include(token => token.Authorization);
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(token => token.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            var key = ConvertIdentifierFromString(client);
+
+            query = query.Where(token => token.Application!.Id!.Equals(key));
         }
 
-        if (string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(status))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+            query = query.Where(token => token.Status == status);
         }
 
-        var key = ConvertIdentifierFromString(client);
-
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
-                where token.Application!.Id!.Equals(key) &&
-                      token.Subject == subject &&
-                      token.Status == status
-                select token).AsAsyncEnumerable(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(type))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(token => token.Type == type);
         }
 
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
-                where token.Application!.Id!.Equals(key) &&
-                      token.Subject == subject &&
-                      token.Status == status &&
-                      token.Type == type
-                select token).AsAsyncEnumerable(cancellationToken);
+        return query.AsAsyncEnumerable(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -660,151 +606,37 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        IQueryable<TToken> query = Tokens.Include(token => token.Application).Include(token => token.Authorization);
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(token => token.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            var key = ConvertIdentifierFromString(client);
+
+            query = query.Where(token => token.Application!.Id!.Equals(key));
         }
 
-        var key = ConvertIdentifierFromString(client);
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(token => token.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            query = query.Where(token => token.Type == type);
+        }
 
         List<Exception>? exceptions = null;
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
-                                     where token.Application!.Id!.Equals(key) && token.Subject == subject
-                                     select token).ToListAsync(cancellationToken))
-        {
-            token.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        foreach (var token in await (from token in Tokens
-                                     where token.Application!.Id!.Equals(key) &&
-                                           token.Subject == subject &&
-                                           token.Status == status
-                                     select token).ToListAsync(cancellationToken))
-        {
-            token.Status = Statuses.Revoked;
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(token).State = EntityState.Unchanged;
-
-                exceptions ??= [];
-                exceptions.Add(exception);
-
-                continue;
-            }
-
-            result++;
-        }
-
-        if (exceptions is not null)
-        {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var key = ConvertIdentifierFromString(client);
-
-        List<Exception>? exceptions = null;
-
-        var result = 0L;
-
-        foreach (var token in await (from token in Tokens
-                                     where token.Application!.Id!.Equals(key) &&
-                                           token.Subject == subject &&
-                                           token.Status == status &&
-                                           token.Type == type
-                                     select token).ToListAsync(cancellationToken))
+        foreach (var token in await query.ToListAsync(cancellationToken))
         {
             token.Status = Statuses.Revoked;
 
@@ -849,7 +681,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
+        foreach (var token in await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
                                      where token.Application!.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
@@ -896,7 +728,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
+        foreach (var token in await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
                                      where token.Authorization!.Id!.Equals(key)
                                      select token).ToListAsync(cancellationToken))
         {
@@ -941,7 +773,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
 
         var result = 0L;
 
-        foreach (var token in await (from token in Tokens
+        foreach (var token in await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
                                      where token.Subject == subject
                                      select token).ToListAsync(cancellationToken))
         {

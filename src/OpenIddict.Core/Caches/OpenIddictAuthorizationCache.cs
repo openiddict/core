@@ -46,30 +46,6 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
 
         _cache.Remove(new
         {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(authorization, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(authorization, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(authorization, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(authorization, cancellationToken),
-            Status = await _store.GetStatusAsync(authorization, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
-            Method = nameof(FindAsync),
-            Subject = await _store.GetSubjectAsync(authorization, cancellationToken),
-            Client = await _store.GetApplicationIdAsync(authorization, cancellationToken),
-            Status = await _store.GetStatusAsync(authorization, cancellationToken),
-            Type = await _store.GetTypeAsync(authorization, cancellationToken)
-        });
-
-        _cache.Remove(new
-        {
             Method = nameof(FindByApplicationIdAsync),
             Identifier = await _store.GetApplicationIdAsync(authorization, cancellationToken)
         });
@@ -105,206 +81,18 @@ public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<TAuthorization> FindAsync(
+        string? subject, string? client,
+        string? status, string? type,
+        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
-            {
-                var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-                await foreach (var authorization in _store.FindAsync(subject, client, cancellationToken))
-                {
-                    builder.Add(authorization);
-
-                    await AddAsync(authorization, cancellationToken);
-                }
-
-                authorizations = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, authorizations, cancellationToken);
-            }
-
-            foreach (var authorization in authorizations)
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
-            {
-                var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-                await foreach (var authorization in _store.FindAsync(subject, client, status, cancellationToken))
-                {
-                    builder.Add(authorization);
-
-                    await AddAsync(authorization, cancellationToken);
-                }
-
-                authorizations = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, authorizations, cancellationToken);
-            }
-
-            foreach (var authorization in authorizations)
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status,
-                Type = type
-            };
-
-            if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
-            {
-                var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-                await foreach (var authorization in _store.FindAsync(subject, client, status, type, cancellationToken))
-                {
-                    builder.Add(authorization);
-
-                    await AddAsync(authorization, cancellationToken);
-                }
-
-                authorizations = builder.ToImmutable();
-
-                await CreateEntryAsync(parameters, authorizations, cancellationToken);
-            }
-
-            foreach (var authorization in authorizations)
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type,
-        ImmutableArray<string> scopes, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
         // Note: this method is only partially cached.
 
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        await foreach (var authorization in _store.FindAsync(subject, client, status, type, scopes, cancellationToken))
         {
-            await foreach (var authorization in _store.FindAsync(subject, client, status, type, scopes, cancellationToken))
-            {
-                await AddAsync(authorization, cancellationToken);
+            await AddAsync(authorization, cancellationToken);
 
-                yield return authorization;
-            }
+            yield return authorization;
         }
     }
 
