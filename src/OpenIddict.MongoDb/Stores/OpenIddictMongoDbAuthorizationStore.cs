@@ -103,159 +103,46 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client, CancellationToken cancellationToken)
+    public virtual async IAsyncEnumerable<TAuthorization> FindAsync(
+        string? subject, string? client,
+        string? status, string? type,
+        ImmutableArray<string>? scopes, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+        IQueryable<TAuthorization> query = collection.AsQueryable();
+
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            query = query.Where(authorization => authorization.ApplicationId == ObjectId.Parse(client));
         }
 
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        if (!string.IsNullOrEmpty(status))
         {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
-
-            await foreach (var authorization in collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Subject == subject).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            query = query.Where(authorization => authorization.Status == status);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(type))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            query = query.Where(authorization => authorization.Type == type);
         }
 
-        if (string.IsNullOrEmpty(status))
+        if (scopes is ImmutableArray<string> values)
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
-
-            await foreach (var authorization in collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Subject == subject &&
-                authorization.Status == status).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
-
-            await foreach (var authorization in collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Subject == subject &&
-                authorization.Status == status &&
-                authorization.Type == type).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return authorization;
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-        string subject, string client,
-        string status, string type,
-        ImmutableArray<string> scopes, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        return ExecuteAsync(cancellationToken);
-
-        async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
-
             // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
             // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
-            await foreach (var authorization in collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Subject == subject &&
-                authorization.Status == status &&
-                authorization.Type == type &&
-                Enumerable.All(scopes, scope => authorization.Scopes!.Contains(scope))).ToAsyncEnumerable(cancellationToken))
-            {
-                yield return authorization;
-            }
+            query = query.Where(authorization => Enumerable.All(values, scope => authorization.Scopes!.Contains(scope)));
+        }
+
+        await foreach (var authorization in query.ToAsyncEnumerable(cancellationToken))
+        {
+            yield return authorization;
         }
     }
 
@@ -550,89 +437,35 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken)
+    public virtual async ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
         var database = await Context.GetDatabaseAsync(cancellationToken);
         var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-        return (await collection.UpdateManyAsync(
-            filter           : authorization => authorization.Subject == subject && authorization.ApplicationId == ObjectId.Parse(client),
-            update           : Builders<TAuthorization>.Update.Set(authorization => authorization.Status, Statuses.Revoked),
-            options          : null,
-            cancellationToken: cancellationToken)).MatchedCount;
-    }
+        var filter = Builders<TAuthorization>.Filter.Empty;
 
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
+        if (!string.IsNullOrEmpty(subject))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
+            filter &= Builders<TAuthorization>.Filter.Where(authorization => authorization.Subject == subject);
         }
 
-        if (string.IsNullOrEmpty(client))
+        if (!string.IsNullOrEmpty(client))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
+            filter &= Builders<TAuthorization>.Filter.Where(authorization => authorization.ApplicationId == ObjectId.Parse(client));
         }
 
-        if (string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(status))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+            filter &= Builders<TAuthorization>.Filter.Where(authorization => authorization.Status == status);
         }
 
-        var database = await Context.GetDatabaseAsync(cancellationToken);
-        var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+        if (!string.IsNullOrEmpty(type))
+        {
+            filter &= Builders<TAuthorization>.Filter.Where(authorization => authorization.Type == type);
+        }
 
         return (await collection.UpdateManyAsync(
-            filter           : authorization => authorization.ApplicationId == ObjectId.Parse(client) &&
-                                                authorization.Subject == subject &&
-                                                authorization.Status == status,
-            update           : Builders<TAuthorization>.Update.Set(authorization => authorization.Status, Statuses.Revoked),
-            options          : null,
-            cancellationToken: cancellationToken)).MatchedCount;
-    }
-
-    /// <inheritdoc/>
-    public virtual async ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(subject))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
-        }
-
-        if (string.IsNullOrEmpty(client))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
-        }
-
-        if (string.IsNullOrEmpty(status))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
-        }
-
-        if (string.IsNullOrEmpty(type))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
-        }
-
-        var database = await Context.GetDatabaseAsync(cancellationToken);
-        var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
-
-        return (await collection.UpdateManyAsync(
-            filter           : authorization => authorization.ApplicationId == ObjectId.Parse(client) &&
-                                                authorization.Subject == subject &&
-                                                authorization.Status == status &&
-                                                authorization.Type == type,
+            filter           : filter,
             update           : Builders<TAuthorization>.Update.Set(authorization => authorization.Status, Statuses.Revoked),
             options          : null,
             cancellationToken: cancellationToken)).MatchedCount;

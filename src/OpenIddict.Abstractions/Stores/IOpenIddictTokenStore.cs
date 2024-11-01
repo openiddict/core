@@ -54,39 +54,17 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves the tokens corresponding to the specified
-    /// subject and associated with the application identifier.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The tokens corresponding to the subject/client.</returns>
-    IAsyncEnumerable<TToken> FindAsync(string subject, string client, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Retrieves the tokens matching the specified parameters.
     /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
+    /// <param name="subject">The subject associated with the token, or <see langword="null"/> not to filter out specific subjects.</param>
+    /// <param name="client">The client associated with the token, or <see langword="null"/> not to filter out specific clients.</param>
+    /// <param name="status">The token status, or <see langword="null"/> not to filter out specific token statuses.</param>
+    /// <param name="type">The token type, or <see langword="null"/> not to filter out specific token types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The tokens corresponding to the criteria.</returns>
     IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Retrieves the tokens matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
-    /// <param name="type">The token type.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The tokens corresponding to the criteria.</returns>
-    IAsyncEnumerable<TToken> FindAsync(
-        string subject, string client,
-        string status, string type, CancellationToken cancellationToken);
+        string? subject, string? client,
+        string? status, string? type, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the list of tokens corresponding to the specified application identifier.
@@ -327,35 +305,15 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Revokes all the tokens corresponding to the specified
-    /// subject and associated with the application identifier.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    ValueTask<long> RevokeAsync(string subject, string client, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Revokes all the tokens matching the specified parameters.
     /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
+    /// <param name="subject">The subject associated with the token, or <see langword="null"/> not to filter out specific subjects.</param>
+    /// <param name="client">The client associated with the token, or <see langword="null"/> not to filter out specific clients.</param>
+    /// <param name="status">The token status, or <see langword="null"/> not to filter out specific token statuses.</param>
+    /// <param name="type">The token type, or <see langword="null"/> not to filter out specific token types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    ValueTask<long> RevokeAsync(string subject, string client, string status, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Revokes all the tokens matching the specified parameters.
-    /// </summary>
-    /// <param name="subject">The subject associated with the token.</param>
-    /// <param name="client">The client associated with the token.</param>
-    /// <param name="status">The token status.</param>
-    /// <param name="type">The token type.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The number of tokens corresponding to the criteria that were marked as revoked.</returns>
-    ValueTask<long> RevokeAsync(string subject, string client, string status, string type, CancellationToken cancellationToken);
+    ValueTask<long> RevokeAsync(string? subject, string? client, string? status, string? type, CancellationToken cancellationToken);
 
     /// <summary>
     /// Revokes all the tokens associated with the specified application identifier.
