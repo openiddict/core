@@ -5,7 +5,10 @@
  */
 
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
+using OpenIddict.Client.SystemNetHttp;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -14,7 +17,8 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                                          IPostConfigureOptions<OpenIddictClientOptions>
+                                                                          IPostConfigureOptions<OpenIddictClientOptions>,
+                                                                          IPostConfigureOptions<OpenIddictClientSystemNetHttpOptions>
 {
     /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
@@ -45,6 +49,38 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
                 ConfigureProvider(registration);
             }
         });
+    }
+
+    /// <inheritdoc/>
+    public void PostConfigure(string? name, OpenIddictClientSystemNetHttpOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        // Override the default/user-defined selectors to support attaching TLS client
+        // certificates that don't meet the requirements enforced by default by OpenIddict.
+        options.SelfSignedTlsClientAuthenticationCertificateSelector = CreateSelector(options.SelfSignedTlsClientAuthenticationCertificateSelector);
+        options.TlsClientAuthenticationCertificateSelector = CreateSelector(options.TlsClientAuthenticationCertificateSelector);
+
+        static Func<OpenIddictClientRegistration, X509Certificate2?> CreateSelector(Func<OpenIddictClientRegistration, X509Certificate2?> selector)
+            => registration =>
+            {
+                var certificate = registration.ProviderType switch
+                {
+                    ProviderTypes.ProSantéConnect => registration.GetProSantéConnectSettings().SigningCertificate,
+
+                    _ => null
+                };
+
+                if (certificate is not null)
+                {
+                    return certificate;
+                }
+
+                return selector(registration);
+            };
     }
 
     /// <summary>
