@@ -156,17 +156,24 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 return AuthenticateResult.NoResult();
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
-            {
-                [Properties.Error] = context.Error,
-                [Properties.ErrorDescription] = context.ErrorDescription,
-                [Properties.ErrorUri] = context.ErrorUri
-            });
+            var properties = CreateAuthenticationProperties();
+            properties.Items[Properties.Error] = context.Error;
+            properties.Items[Properties.ErrorDescription] = context.ErrorDescription;
+            properties.Items[Properties.ErrorUri] = context.ErrorUri;
 
             return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
         }
 
         else
+        {
+            var properties = CreateAuthenticationProperties();
+
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
+                OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
+        }
+
+        AuthenticationProperties CreateAuthenticationProperties()
         {
             var properties = new AuthenticationProperties
             {
@@ -336,9 +343,7 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
                 properties.SetParameter(Properties.UserInfoTokenPrincipal, context.UserInfoTokenPrincipal);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
-                OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
+            return properties;
         }
     }
 

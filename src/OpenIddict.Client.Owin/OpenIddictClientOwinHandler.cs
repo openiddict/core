@@ -155,17 +155,22 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 return null;
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
-            {
-                [Properties.Error] = context.Error,
-                [Properties.ErrorDescription] = context.ErrorDescription,
-                [Properties.ErrorUri] = context.ErrorUri
-            });
+            var properties = CreateAuthenticationProperties();
+            properties.Dictionary[Properties.Error] = context.Error;
+            properties.Dictionary[Properties.ErrorDescription] = context.ErrorDescription;
+            properties.Dictionary[Properties.ErrorUri] = context.ErrorUri;
 
-            return new AuthenticationTicket(null, properties);
+            return new AuthenticationTicket(new ClaimsIdentity(), properties);
         }
 
         else
+        {
+            var properties = CreateAuthenticationProperties();
+
+            return new AuthenticationTicket(context.MergedPrincipal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
+        }
+
+        AuthenticationProperties CreateAuthenticationProperties()
         {
             var properties = new AuthenticationProperties
             {
@@ -240,7 +245,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
                 properties.Dictionary[Tokens.UserInfoToken] = context.UserInfoToken;
             }
 
-            return new AuthenticationTicket(context.MergedPrincipal?.Identity as ClaimsIdentity, properties);
+            return properties;
         }
     }
 

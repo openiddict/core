@@ -150,14 +150,12 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
                 return null;
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
-            {
-                [Properties.Error] = context.Error,
-                [Properties.ErrorDescription] = context.ErrorDescription,
-                [Properties.ErrorUri] = context.ErrorUri
-            });
+            var properties = CreateAuthenticationProperties();
+            properties.Dictionary[Properties.Error] = context.Error;
+            properties.Dictionary[Properties.ErrorDescription] = context.ErrorDescription;
+            properties.Dictionary[Properties.ErrorUri] = context.ErrorUri;
 
-            return new AuthenticationTicket(null, properties);
+            return new AuthenticationTicket(new ClaimsIdentity(), properties);
         }
 
         else
@@ -170,6 +168,13 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
                 _ => null
             };
 
+            var properties = CreateAuthenticationProperties(principal);
+
+            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
+        }
+
+        AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
+        {
             var properties = new AuthenticationProperties
             {
                 ExpiresUtc = principal?.GetExpirationDate(),
@@ -184,7 +189,7 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Open
                 properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
             }
 
-            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity, properties);
+            return properties;
         }
     }
 
