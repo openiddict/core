@@ -46,7 +46,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"           />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"           />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -103,7 +103,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"           />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"           />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -160,7 +160,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"           />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"           />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"           />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"          />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1"          />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"           />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"           />
 
@@ -206,7 +206,7 @@
     <PackageVersion Include="Microsoft.Owin.Security.OAuth"                                   Version="4.2.2"           />
     <PackageVersion Include="Microsoft.Web.Infrastructure"                                    Version="2.0.1"           />
     <PackageVersion Include="Newtonsoft.Json"                                                 Version="13.0.3"          />
-    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"          />
+    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.1"          />
     <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"          />
     <PackageVersion Include="WebGrease"                                                       Version="1.6.0"           />
 
@@ -228,31 +228,31 @@
   <ItemGroup Label="Package versions for .NET 6.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '6.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"  />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="6.0.35" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="6.0.2"  />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="6.0.36" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="6.0.3"  />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="6.0.35" />
-    <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="6.0.0"  />
-    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="6.0.35" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="6.0.36" />
+    <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="6.0.36" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="7.6.3"  />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="7.6.3"  />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="7.6.3"  />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="2.1.14" />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"  />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1" />
 
     <!--
       Note: the following references are exclusively used in the test projects:
     -->
     <PackageVersion Include="AngleSharp"                                                      Version="0.17.1" />
     <PackageVersion Include="MartinCostello.Logging.XUnit"                                    Version="0.3.0"  />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="6.0.35" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="6.0.1"  />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="6.0.36" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="6.0.2"  />
     <PackageVersion Include="Moq"                                                             Version="4.18.4" />
     <PackageVersion Include="System.Linq.Async"                                               Version="6.0.1"  />
 
@@ -274,32 +274,32 @@
   <ItemGroup Label="Package versions for .NET 8.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0')) ">
     <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"   />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="8.0.10"  />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="8.0.11"  />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="8.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="8.0.1"   />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="8.0.1"   />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="8.0.10"  />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="8.0.11"  />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                            Version="8.4.0"   />
     <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="8.0.1"   />
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="8.0.0"   />
-    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="8.0.10"  />
+    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="8.0.11"  />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"   />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"   />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"   />
-    <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.10"  />
+    <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.11"  />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"   />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"   />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"  />
-    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1"  />
+    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.7" />
 
     <!--
       Note: the following references are exclusively used in the test projects:
     -->
     <PackageVersion Include="AngleSharp"                                                      Version="0.17.1"  />
     <PackageVersion Include="MartinCostello.Logging.XUnit"                                    Version="0.3.0"   />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="8.0.10"  />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="8.0.11"  />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="8.0.1"   />
     <PackageVersion Include="Moq"                                                             Version="4.18.4"  />
     <PackageVersion Include="System.Linq.Async"                                               Version="6.0.1"   />
@@ -339,8 +339,8 @@
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0"   />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"   />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"   />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"  />
-    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1"  />
+    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.7" />
 
     <!--
       Note: the following references are exclusively used in the test projects:
@@ -364,7 +364,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="9.0.0"   />
     <PackageVersion Include="Microsoft.Maui.Controls"                                         Version="9.0.0"   />
     <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                           Version="9.0.0"   />
-    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"  />
+    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.1"  />
     <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"  />
 
     <!--
@@ -408,7 +408,7 @@
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"  />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"  />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1" />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"  />
     <PackageVersion Include="System.ComponentModel.Annotations"                               Version="4.7.0"  />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"  />
@@ -457,7 +457,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"  />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"  />
     <PackageVersion Include="NamedPipeServerStream.NetFrameworkVersion"                       Version="1.1.7"  />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.1" />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"  />
     <PackageVersion Include="System.ComponentModel.Annotations"                               Version="4.7.0"  />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"  />
