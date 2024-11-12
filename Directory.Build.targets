@@ -24,17 +24,17 @@
     <SupportedOSPlatformVersion
       Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
                    '$(TargetPlatformIdentifier)'  == 'iOS'         And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">12.0</SupportedOSPlatformVersion>
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.2'))) ">12.2</SupportedOSPlatformVersion>
 
     <SupportedOSPlatformVersion
       Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
                    '$(TargetPlatformIdentifier)'  == 'MacCatalyst' And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '13.1'))) ">13.1</SupportedOSPlatformVersion>
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '15.0'))) ">15.0</SupportedOSPlatformVersion>
 
     <SupportedOSPlatformVersion
       Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And
                    '$(TargetPlatformIdentifier)'  == 'macOS'       And '$(TargetPlatformVersion)' != '' And
-                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '10.15'))) ">10.15</SupportedOSPlatformVersion>
+                    $([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), '12.0'))) ">12.0</SupportedOSPlatformVersion>
 
     <SupportedOSPlatformVersion
       Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0')) And

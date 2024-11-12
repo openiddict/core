@@ -200,7 +200,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             (string left, string right) => string.Equals(left, right, StringComparison.Ordinal),
 
             // If the two parameters are string arrays, use SequenceEqual().
-            (string?[] left, string?[] right) => left.SequenceEqual(right),
+            (string?[] left, string?[] right) => Enumerable.SequenceEqual(left, right),
 
             // If one of the two parameters is an undefined JsonElement, treat it
             // as a null value and return true if the other parameter is null too.
