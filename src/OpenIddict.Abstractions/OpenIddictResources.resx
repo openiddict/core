@@ -1701,6 +1701,12 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0457" xml:space="preserve">
     <value>The '{0}' parameter cannot contain null or empty values.</value>
   </data>
+  <data name="ID0458" xml:space="preserve">
+    <value>A token must be specified when using introspection.</value>
+  </data>
+  <data name="ID0459" xml:space="preserve">
+    <value>A token must be specified when using revocation.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

@@ -6171,6 +6171,11 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (string.IsNullOrEmpty(context.Token))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0458));
+            }
+
             if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
                 context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
                 context.Options.Registrations.Count is not 1)
@@ -6839,6 +6844,11 @@ public static partial class OpenIddictClientHandlers
             if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (string.IsNullOrEmpty(context.Token))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0459));
             }
 
             if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
