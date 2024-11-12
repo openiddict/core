@@ -285,9 +285,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="8.0.2"   />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="8.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="8.0.11"  />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.2.0"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.2.0"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.2.0"   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="8.0.11"  />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"   />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"   />
@@ -333,9 +333,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="9.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="9.0.0"   />
     <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="9.0.0"   />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"   />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.2.0"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.2.0"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.2.0"   />
     <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0"   />
     <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"   />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"   />
