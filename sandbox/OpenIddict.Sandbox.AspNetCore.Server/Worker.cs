@@ -152,7 +152,7 @@ public class Worker : IHostedService
                     ClientId = "mvc",
                     ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                     ClientType = ClientTypes.Confidential,
-                    ConsentType = ConsentTypes.Explicit,
+                    ConsentType = ConsentTypes.Systematic,
                     DisplayName = "MVC client application",
                     DisplayNames =
                     {

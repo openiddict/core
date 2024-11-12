@@ -162,7 +162,7 @@ public partial class OpenIddictValidationOwinIntegrationTests : OpenIddictValida
                 if (context.Request.Path == new PathString("/authenticate"))
                 {
                     var result = await context.Authentication.AuthenticateAsync(OpenIddictValidationOwinDefaults.AuthenticationType);
-                    if (result?.Identity is null)
+                    if (result?.Identity is not { IsAuthenticated: true })
                     {
                         context.Authentication.Challenge(OpenIddictValidationOwinDefaults.AuthenticationType);
                         return;

@@ -156,12 +156,10 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 return AuthenticateResult.NoResult();
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>
-            {
-                [Properties.Error] = context.Error,
-                [Properties.ErrorDescription] = context.ErrorDescription,
-                [Properties.ErrorUri] = context.ErrorUri
-            });
+            var properties = CreateAuthenticationProperties();
+            properties.Items[Properties.Error] = context.Error;
+            properties.Items[Properties.ErrorDescription] = context.ErrorDescription;
+            properties.Items[Properties.ErrorUri] = context.ErrorUri;
 
             return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
         }
@@ -199,6 +197,15 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 _ => null
             };
 
+            var properties = CreateAuthenticationProperties(principal);
+
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+        }
+
+        AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
+        {
             var properties = new AuthenticationProperties
             {
                 ExpiresUtc = principal?.GetExpirationDate(),
@@ -325,9 +332,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 properties.StoreTokens(tokens);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+            return properties;
         }
     }
 

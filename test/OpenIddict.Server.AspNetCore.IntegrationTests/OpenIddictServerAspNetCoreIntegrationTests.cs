@@ -18,6 +18,7 @@ using OpenIddict.Server.IntegrationTests;
 using Xunit;
 using Xunit.Abstractions;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 
 #if SUPPORTS_JSON_NODES
@@ -132,6 +133,54 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
             .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
 
         Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_CustomPropertiesAreAddedForErroredAuthenticationResults()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate/properties");
+
+            options.UseAspNetCore()
+                   .EnableErrorPassthrough()
+                   .EnableAuthorizationEndpointPassthrough();
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.RejectIdentityToken = true;
+
+                    context.Properties["custom_property"] = "value";
+
+                    return default;
+                });
+
+                builder.SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/authenticate/properties", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token_hint",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = "id_token",
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        var properties = new AuthenticationProperties(response.GetParameters()
+            .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+
+        Assert.Equal("value", properties.Items["custom_property"]);
     }
 
     [Fact]
