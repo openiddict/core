@@ -321,57 +321,57 @@
 
   <ItemGroup Label="Package versions for .NET 9.0"
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '9.0')) ">
-    <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"                   />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="9.0.0-rc.2.24474.1"      />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                            Version="9.0.0-preview.9.24507.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"                   />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"                   />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"                   />
-    <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"                   />
-    <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"                   />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"                  />
-    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6"                 />
+    <PackageVersion Include="EntityFramework"                                                 Version="6.5.1"   />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"                        Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions"                       Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                             Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions"           Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"                       Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly"                                 Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                            Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Logging"                                    Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Options"                                    Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Primitives"                                 Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.WebEncoders"                                Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                           Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="8.1.2"   />
+    <PackageVersion Include="Microsoft.Net.Http.Headers"                                      Version="9.0.0"   />
+    <PackageVersion Include="MongoDB.Bson"                                                    Version="3.0.0"   />
+    <PackageVersion Include="MongoDB.Driver"                                                  Version="3.0.0"   />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.13.0"  />
+    <PackageVersion Include="Xamarin.AndroidX.Browser"                                        Version="1.8.0.6" />
 
     <!--
       Note: the following references are exclusively used in the test projects:
     -->
-    <PackageVersion Include="AngleSharp"                                                      Version="0.17.1"                  />
-    <PackageVersion Include="MartinCostello.Logging.XUnit"                                    Version="0.3.0"                   />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Moq"                                                             Version="4.18.4"                  />
-    <PackageVersion Include="System.Linq.Async"                                               Version="6.0.1"                   />
+    <PackageVersion Include="AngleSharp"                                                      Version="0.17.1"  />
+    <PackageVersion Include="MartinCostello.Logging.XUnit"                                    Version="0.3.0"   />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost"                                   Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"                        Version="9.0.0"   />
+    <PackageVersion Include="Moq"                                                             Version="4.18.4"  />
+    <PackageVersion Include="System.Linq.Async"                                               Version="6.0.1"   />
 
     <!--
       Note: the following references are exclusively used in the samples:
     -->
-    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.AppServices"                 Version="1.0.14"                  />
-    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.WinForms"                    Version="1.0.14"                  />
-    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.Wpf"                         Version="1.0.14"                  />
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"               Version="9.0.0-rc.2.24474.3"      />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                            Version="9.0.0-rc.2.24474.1"      />
-    <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="9.0.0-rc.2.24473.5"      />
-    <PackageVersion Include="Microsoft.Maui.Controls"                                         Version="9.0.0-rc.2.24503.2"      />
-    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                           Version="9.0.0-rc.2.24503.2"      />
-    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"                  />
-    <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"                  />
+    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.AppServices"                 Version="1.0.14"  />
+    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.WinForms"                    Version="1.0.14"  />
+    <PackageVersion Include="Dapplo.Microsoft.Extensions.Hosting.Wpf"                         Version="1.0.14"  />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"               Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                            Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Hosting"                                    Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug"                              Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Maui.Controls"                                         Version="9.0.0"   />
+    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility"                           Version="9.0.0"   />
+    <PackageVersion Include="Quartz.Extensions.Hosting"                                       Version="3.13.0"  />
+    <PackageVersion Include="Spectre.Console"                                                 Version="0.48.0"  />
 
     <!--
       Note: OpenIddict uses PolySharp to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <GlobalPackageReference Include="PolySharp" Condition=" '$(DisablePolySharp)' != 'true' " Version="1.13.1"                  />
+    <GlobalPackageReference Include="PolySharp" Condition=" '$(DisablePolySharp)' != 'true' " Version="1.13.1"  />
   </ItemGroup>
 
   <!--
