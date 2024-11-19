@@ -2216,11 +2216,21 @@ public static partial class OpenIddictServerHandlers
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique strings or array of strings.
-                Claims.AuthenticationMethodReference or Claims.Private.Audience or
-                Claims.Private.Presenter             or Claims.Private.Resource
+                Claims.Private.Audience or Claims.Private.Presenter or Claims.Private.Resource
                     => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
                        // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
                        // if the individual elements of the parsed JSON array are all string values.
+                       (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
+                        JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
+                        OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
+
+                // Note: unlike other claims (e.g "aud"), the "amr" claim MUST be represented as a unique
+                // claim representing a JSON array, even if a single authentication method reference
+                // is present in the collection. To avoid forcing users to use the special JSON_ARRAY
+                // value type, string values are also allowed here and normalized to JSON arrays
+                // by OpenIddict when generating an identity token based on the specified principal.
+                Claims.AuthenticationMethodReference
+                    => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
                        (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
                         JsonSerializer.Deserialize<JsonElement>(value) is { ValueKind: JsonValueKind.Array } element &&
                         OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
