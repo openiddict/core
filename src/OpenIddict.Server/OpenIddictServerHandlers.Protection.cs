@@ -1384,6 +1384,8 @@ public static partial class OpenIddictServerHandlers
 
                     Claims.Private.Scope when context.TokenType is TokenTypeHints.AccessToken => false,
 
+                    Claims.AuthenticationMethodReference when context.TokenType is TokenTypeHints.IdToken => false,
+
                     _ => true
                 });
 
@@ -1398,10 +1400,27 @@ public static partial class OpenIddictServerHandlers
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
                     {
-                        claims.Add(Claims.Audience, audiences.Length switch
+                        claims.Add(Claims.Audience, audiences switch
                         {
-                            1 => audiences.ElementAt(0),
-                            _ => audiences
+                            [string audience] => audience,
+                                    _         => audiences.ToArray()
+                        });
+                    }
+                }
+
+                // Note: unlike other claims (e.g "aud"), the "amr" claim MUST be represented as a unique
+                // claim representing a JSON array, even if a single authentication method reference is
+                // present in the collection. To ensure an array is always returned, the "amr" claim is
+                // filtered out from the clone principal and manually added as a "string[]" claim value.
+                if (context.TokenType is TokenTypeHints.IdToken)
+                {
+                    var methods = context.Principal.GetClaims(Claims.AuthenticationMethodReference);
+                    if (methods.Any())
+                    {
+                        claims.Add(Claims.AuthenticationMethodReference, methods switch
+                        {
+                            [string method] => [method],
+                                   _        => methods.ToArray()
                         });
                     }
                 }
