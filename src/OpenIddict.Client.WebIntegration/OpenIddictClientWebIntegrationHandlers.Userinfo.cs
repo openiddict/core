@@ -407,7 +407,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
                     // Fitbit, Todoist, and Zendesk return a nested "user" object.
-                    ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.Zendesk => new(context.Response["user"]?.GetNamedParameters() ??
+                    ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.Zendesk
+                        => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Harvest returns a nested "user" object and a collection of "accounts".

@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
-using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.UserInfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -19,12 +18,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     public static class Revocation
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
-
             /*
              * Revocation request preparation:
              */
             OverrideHttpMethod.Descriptor,
-            AttachAccessTokenParameter.Descriptor,
+            AttachBearerAccessToken.Descriptor,
+
             /*
              * Revocation response extraction:
              */
@@ -73,10 +72,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the access token
-        /// parameter to the request for the providers that require it.
+        /// Contains the logic responsible for attaching the token to revoke
+        /// to the HTTP Authorization header for the providers that require it.
         /// </summary>
-        public sealed class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareRevocationRequestContext>
+        public sealed class AttachBearerAccessToken : IOpenIddictClientHandler<PrepareRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -84,8 +83,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
                     .AddFilter<RequireHttpUri>()
-                    .UseSingletonHandler<AttachAccessTokenParameter>()
-                    .SetOrder(AttachBearerAccessToken.Descriptor.Order + 250)
+                    .UseSingletonHandler<AttachBearerAccessToken>()
+                    .SetOrder(AttachHttpParameters<PrepareRevocationRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -102,10 +101,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 var request = context.Transaction.GetHttpRequestMessage() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-                // Zendesk requires using the token that is going to be revoked
+                // Zendesk requires using bearer authentication with the token that is going to be revoked.
                 if (context.Registration.ProviderType is ProviderTypes.Zendesk)
                 {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.Token);
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, context.Token);
+
+                    // Remove the token from the request payload to ensure it's not sent twice.
+                    context.Request.Token = null;
                 }
 
                 return default;
