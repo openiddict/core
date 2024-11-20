@@ -406,8 +406,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.ExactOnline => new(context.Response["d"]?["results"]?[0]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("d/results/0"))),
 
-                    // Fitbit and Todoist return a nested "user" object.
-                    ProviderTypes.Fitbit or ProviderTypes.Todoist => new(context.Response["user"]?.GetNamedParameters() ??
+                    // Fitbit, Todoist, and Zendesk return a nested "user" object.
+                    ProviderTypes.Fitbit or ProviderTypes.Todoist or ProviderTypes.Zendesk => new(context.Response["user"]?.GetNamedParameters() ??
                         throw new InvalidOperationException(SR.FormatID0334("user"))),
 
                     // Harvest returns a nested "user" object and a collection of "accounts".
