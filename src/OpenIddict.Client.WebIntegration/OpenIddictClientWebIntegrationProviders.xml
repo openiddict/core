@@ -2163,7 +2163,6 @@
 
   <Provider Name="Zendesk" Id="5577b117-1f3d-464f-b987-aabf7c0ab3f7"
             Documentation="https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application">
-
     <!--
       Note: Zendesk is a multitenant provider that relies on subdomains to identify instances.
       As such, the following URLs all include a {settings.Tenant} placeholder that will be dynamically
