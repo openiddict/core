@@ -76,7 +76,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // Attach the authorization header containing the access token to the HTTP request.
                 request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, context.Request.AccessToken);
 
-                // Remove the access from the request payload to ensure it's not sent twice.
+                // Remove the access token from the request payload to ensure it's not sent twice.
                 context.Request.AccessToken = null;
 
                 return default;

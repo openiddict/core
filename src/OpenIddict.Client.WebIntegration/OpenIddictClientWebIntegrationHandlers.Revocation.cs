@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -18,10 +19,100 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
+             * Revocation request preparation:
+             */
+            OverrideHttpMethod.Descriptor,
+            AttachBearerAccessToken.Descriptor,
+
+            /*
              * Revocation response extraction:
              */
             NormalizeContentType.Descriptor
         ]);
+
+        /// <summary>
+        /// Contains the logic responsible for overriding the HTTP method for the providers that require it.
+        /// </summary>
+        public sealed class OverrideHttpMethod : IOpenIddictClientHandler<PrepareRevocationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
+                    .AddFilter<RequireHttpUri>()
+                    .UseSingletonHandler<OverrideHttpMethod>()
+                    .SetOrder(PreparePostHttpRequest<PrepareRevocationRequestContext>.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                request.Method = context.Registration.ProviderType switch
+                {
+
+                    ProviderTypes.Zendesk => HttpMethod.Delete,
+
+                    _ => request.Method
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching the token to revoke
+        /// to the HTTP Authorization header for the providers that require it.
+        /// </summary>
+        public sealed class AttachBearerAccessToken : IOpenIddictClientHandler<PrepareRevocationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
+                    .AddFilter<RequireHttpUri>()
+                    .UseSingletonHandler<AttachBearerAccessToken>()
+                    .SetOrder(AttachHttpParameters<PrepareRevocationRequestContext>.Descriptor.Order - 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                // Zendesk requires using bearer authentication with the token that is going to be revoked.
+                if (context.Registration.ProviderType is ProviderTypes.Zendesk)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, context.Token);
+
+                    // Remove the token from the request payload to ensure it's not sent twice.
+                    context.Request.Token = null;
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for normalizing the returned content

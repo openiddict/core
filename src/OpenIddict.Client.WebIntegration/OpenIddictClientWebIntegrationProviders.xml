@@ -2154,6 +2154,35 @@
   </Provider>
 
   <!--
+                                        ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                        ██ ▄▄▄ ██ ▄▄▄██ ▀██ ██ ▄▄▀██ ▄▄▄██ ▄▄▄ ██ █▀▄██
+                                        ██▀▀▀▄▄██ ▄▄▄██ █ █ ██ ██ ██ ▄▄▄██▄▄▄▀▀██ ▄▀███
+                                        ██ ▀▀▀ ██ ▀▀▀██ ██▄ ██ ▀▀ ██ ▀▀▀██ ▀▀▀ ██ ██ ██
+                                        ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Zendesk" Id="5577b117-1f3d-464f-b987-aabf7c0ab3f7"
+            Documentation="https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application">
+    <!--
+      Note: Zendesk is a multitenant provider that relies on subdomains to identify instances.
+      As such, the following URLs all include a {settings.Tenant} placeholder that will be dynamically
+      replaced by OpenIddict at runtime by the tenant configured in the Zendesk settings.
+    -->
+
+    <Environment Issuer="https://{settings.Tenant}.zendesk.com/">
+      <Configuration AuthorizationEndpoint="https://{settings.Tenant}.zendesk.com/oauth/authorizations/new"
+                     TokenEndpoint="https://{settings.Tenant}.zendesk.com/oauth/tokens"
+                     UserInfoEndpoint="https://{settings.Tenant}.zendesk.com/api/v2/users/me"
+                     RevocationEndpoint="https://{settings.Tenant}.zendesk.com/api/v2/oauth/tokens/current.json">
+        <CodeChallengeMethod Value="S256" />
+      </Configuration>
+    </Environment>
+
+    <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="true"
+             Description="Gets or sets the tenant used to identify the Zendesk instance" />
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 ██ ▄▄▄ ██ ▄▄▄ ██ ██ ██ ▄▄▄ ██
                                                 ██▀▀▀▄▄██ ███ ██ ▄▄ ██ ███ ██
