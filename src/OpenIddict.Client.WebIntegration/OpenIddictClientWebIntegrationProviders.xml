@@ -600,6 +600,27 @@
   </Provider>
 
   <!--
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              ██ ▄▄▄█ ██ █ ▄▄▄████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
+                              ██ ▄▄▄█ ██ █ ▄▄▄████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
+                              ██ ▀▀▀█▄▀▀▄█ ▀▀▀████ ▀▀▀ ██ ██▄ ██ ▀▀ █▀ ▀██ ██▄ ██ ▀▀▀██
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="EveOnline" Id="e4614207-4f73-47c2-86c9-31f59d4c94f9"
+            Documentation="https://developers.eveonline.com/">
+    <Environment Issuer="https://login.eveonline.com/">
+      <Configuration AuthorizationEndpoint="https://login.eveonline.com/v2/oauth/authorize"
+                     RevocationEndpoint="https://login.eveonline.com/v2/oauth/revoke"
+                     TokenEndpoint="https://login.eveonline.com/v2/oauth/token">
+        <CodeChallengeMethod Value="S256" />
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                               ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                               ██ ▄▄▄█▄▀█▀▄█ ▄▄▀██ ▄▄▀█▄▄ ▄▄████ ▄▄▄ ██ ▀██ ██ ████▄ ▄██ ▀██ ██ ▄▄▄██
                               ██ ▄▄▄███ ███ ▀▀ ██ ██████ ██████ ███ ██ █ █ ██ █████ ███ █ █ ██ ▄▄▄██
