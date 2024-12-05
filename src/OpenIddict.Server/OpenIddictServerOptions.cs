@@ -53,9 +53,9 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
     ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
-    /// </list>
+    /// </list>n
     /// </remarks>
-    public List<SigningCredentials> SigningCredentials { get; } = [];
+    public IOpenIddictCredentialList<SigningCredentials> SigningCredentials { get; } = new OpenIddictSigningOpenIddictCredentialList([], null);
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the authorization endpoint.
@@ -170,7 +170,7 @@ public sealed class OpenIddictServerOptions
         },
         // Note: audience and lifetime are manually validated by OpenIddict itself.
         ValidateAudience = false,
-        ValidateLifetime = false
+        ValidateLifetime = false,
     };
 
     /// <summary>
