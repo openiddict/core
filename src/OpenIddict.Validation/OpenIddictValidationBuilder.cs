@@ -174,6 +174,21 @@ public sealed class OpenIddictValidationBuilder
 
         throw new InvalidOperationException(SR.GetResourceString(SR.ID0056));
     }
+    
+    /// <summary>
+    /// Registers multiple encryption keys.
+    /// </summary>
+    /// <param name="keys">The security keys.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddEncryptionKeys(IEnumerable<SecurityKey> keys)
+    {
+        if (keys is null)
+        {
+            throw new ArgumentNullException(nameof(keys));
+        }
+
+        return keys.Aggregate(this, static (builder, key) => builder.AddEncryptionKey(key));
+    }
 
     /// <summary>
     /// Registers an encryption certificate.
@@ -351,6 +366,21 @@ public sealed class OpenIddictValidationBuilder
                 .OfType<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
+    
+    /// <summary>
+    /// Registers multiple encryption certificates.
+    /// </summary>
+    /// <param name="certificates">The encryption certificates.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddEncryptionCertificates(IEnumerable<X509Certificate2> certificates)
+    {
+        if (certificates is null)
+        {
+            throw new ArgumentNullException(nameof(certificates));
+        }
+        
+        return certificates.Aggregate(this, static (builder, certificate) => builder.AddEncryptionCertificate(certificate));
+    }
 
     /// <summary>
     /// Registers signing credentials.
@@ -422,6 +452,21 @@ public sealed class OpenIddictValidationBuilder
 #endif
 
         throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
+    }
+    
+    /// <summary>
+    /// Registers multiple signing keys.
+    /// </summary>
+    /// <param name="keys">The signing keys.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningKeys(IEnumerable<SecurityKey> keys)
+    {
+        if (keys is null)
+        {
+            throw new ArgumentNullException(nameof(keys));
+        }
+
+        return keys.Aggregate(this, static (builder, key) => builder.AddSigningKey(key));
     }
 
     /// <summary>
@@ -596,6 +641,21 @@ public sealed class OpenIddictValidationBuilder
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
                 .OfType<X509Certificate2>()
                 .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+    }
+    
+    /// <summary>
+    /// Registers multiple signing certificates.
+    /// </summary>
+    /// <param name="certificates">The signing certificates.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder AddSigningCertificates(IEnumerable<X509Certificate2> certificates)
+    {
+        if (certificates is null)
+        {
+            throw new ArgumentNullException(nameof(certificates));
+        }
+        
+        return certificates.Aggregate(this, static (builder, certificate) => builder.AddSigningCertificate(certificate));
     }
 
     /// <summary>
