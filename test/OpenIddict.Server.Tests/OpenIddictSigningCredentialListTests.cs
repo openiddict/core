@@ -6,13 +6,13 @@ using Xunit.Abstractions;
 
 namespace OpenIddict.Server.Tests
 {
-    public class OpenIddictSigningOpenIddictCredentialListTests(ITestOutputHelper testOutputHelper)
+    public class OpenIddictSigningCredentialListTests(ITestOutputHelper testOutputHelper)
     {
         private readonly DateTime _fakeNow = new(2024, 12, 6);
 
-        private OpenIddictSigningOpenIddictCredentialList CreateSut(SigningCredentials[]? initialValues = null)
+        private OpenIddictSigningCredentialList CreateSut(SigningCredentials[]? initialValues = null)
         {
-            return new OpenIddictSigningOpenIddictCredentialList(initialValues ?? [], new OpenIddictSigningCredentialsComparer(() => _fakeNow));
+            return new OpenIddictSigningCredentialList(initialValues ?? [], new OpenIddictSigningCredentialsComparer(() => _fakeNow));
         }
         
         [Fact]
@@ -21,7 +21,7 @@ namespace OpenIddict.Server.Tests
             X509Certificate2? fakeCert = X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate.pfx");
             X509SigningCredentials? credential = new(fakeCert) { Key = { KeyId = null } };
 
-            OpenIddictSigningOpenIddictCredentialList? sut = CreateSut();
+            OpenIddictSigningCredentialList? sut = CreateSut();
             
             sut.Add(credential);
             
@@ -38,7 +38,7 @@ namespace OpenIddict.Server.Tests
             Print(fakeCert1);
             Print(fakeCert2);
 
-            OpenIddictSigningOpenIddictCredentialList sut = CreateSut([]);
+            OpenIddictSigningCredentialList sut = CreateSut([]);
             
             sut.AddRange([fakeCert1, fakeCert2]);
             

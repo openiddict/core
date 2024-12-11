@@ -52,7 +52,7 @@ namespace OpenIddict.Server.Tests
         private static X509Certificate2? ReadCert(string file)
         {
             byte[] embeddedCert;
-            Assembly thisAssembly = typeof(OpenIddictSigningOpenIddictCredentialListTests).GetTypeInfo().Assembly;
+            Assembly thisAssembly = typeof(OpenIddictSigningCredentialListTests).GetTypeInfo().Assembly;
             
             using (Stream? certStream = thisAssembly.GetManifestResourceStream(file))
             {

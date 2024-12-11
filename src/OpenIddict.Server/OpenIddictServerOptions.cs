@@ -55,7 +55,7 @@ public sealed class OpenIddictServerOptions
     ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
     /// </list>n
     /// </remarks>
-    public IOpenIddictCredentialList<SigningCredentials> SigningCredentials { get; } = new OpenIddictSigningOpenIddictCredentialList([], null);
+    public IOpenIddictCredentialList<SigningCredentials> SigningCredentials { get; } = new OpenIddictSigningCredentialList([], null);
 
     /// <summary>
     /// Gets the absolute and relative URIs associated to the authorization endpoint.

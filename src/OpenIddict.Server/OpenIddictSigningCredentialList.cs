@@ -5,14 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Server
 {
-    public class OpenIddictSigningOpenIddictCredentialList: 
+    public class OpenIddictSigningCredentialList: 
         IOpenIddictCredentialList<SigningCredentials>
     {
         private OpenIddictSigningCredentialsComparer comparer;
         private readonly object _setLock = new();
         private IImmutableSet<SigningCredentials> _internalSet;
 
-        public OpenIddictSigningOpenIddictCredentialList(SigningCredentials[] initialValues, OpenIddictSigningCredentialsComparer? inputComp)
+        public OpenIddictSigningCredentialList(SigningCredentials[] initialValues, OpenIddictSigningCredentialsComparer? inputComp)
         {
             comparer = inputComp ?? OpenIddictSigningCredentialsComparer.DefaultInstance;
             _internalSet = ImmutableSortedSet.Create(comparer, initialValues);
