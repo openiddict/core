@@ -5,29 +5,29 @@ namespace OpenIddict.Server
 {
     public static class OpenIddictSecurityKeyExtensions
     {
-        internal static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
+        public static int Compare(SecurityKey left, SecurityKey right, DateTime now) => (left, right) switch
         {
             // If the two keys refer to the same instances, return 0.
-            (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
-
+            ({ } first, { } second) when ReferenceEquals(first, second) => 0,
+            
             // If one of the keys is a symmetric key, prefer it to the other one.
-            (SymmetricSecurityKey, SymmetricSecurityKey) => 0,
-            (SymmetricSecurityKey, SecurityKey)          => -1,
-            (SecurityKey, SymmetricSecurityKey)          => 1,
-
+            (SymmetricSecurityKey, SymmetricSecurityKey)              =>  0,
+            (SymmetricSecurityKey, not SymmetricSecurityKey)          => -1,
+            (not SymmetricSecurityKey, SymmetricSecurityKey)          =>  1,
+            
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > now => 1,
-            (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
-
+            (X509SecurityKey first, not null) when first.Certificate.NotBefore  > now =>  1,
+            (not null, X509SecurityKey second) when second.Certificate.NotBefore > now => -1,
+            
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
             (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),
-
+            
             // If one of the keys is backed by a X.509 certificate, prefer the X.509 security key.
-            (X509SecurityKey, SecurityKey) => -1,
-            (SecurityKey, X509SecurityKey) => 1,
-
+            (X509SecurityKey, not X509SecurityKey) => -1,
+            (not X509SecurityKey, X509SecurityKey) =>  1,
+            
             // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
-            (SecurityKey, SecurityKey) => 0
+            (not X509SecurityKey, not X509SecurityKey) => 0
         };
 
         internal static string? GetKeyIdentifier(SecurityKey key)

@@ -6,6 +6,15 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Certificate.pfx" />
+    <None Remove="FakeCert.p12" />
+    <None Remove="Certificate_110526_101226.pem" />
+    <EmbeddedResource Include="Certificate_110526_101226.pem" />
+    <None Remove="Certificate_220726_050527.pem" />
+    <EmbeddedResource Include="Certificate_220726_050527.pem" />
+    <None Remove="Certificate_220726_091227.pem" />
+    <EmbeddedResource Include="Certificate_220726_091227.pem" />
+    <None Remove="Certificate_221226_230827.pem" />
+    <EmbeddedResource Include="Certificate_221226_230827.pem" />
   </ItemGroup>
 
   <ItemGroup>
