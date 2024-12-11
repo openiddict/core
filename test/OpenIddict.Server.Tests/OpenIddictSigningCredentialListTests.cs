@@ -15,11 +15,14 @@ namespace OpenIddict.Server.Tests
             return new OpenIddictSigningCredentialList(initialValues ?? [], new OpenIddictSigningCredentialsComparer(() => _fakeNow));
         }
         
-        [Fact]
-        public void Add_WhenNoKidSet_ShouldAddOne()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("  ")]
+        public void Add_WhenNoKidSet_ShouldAddOne(string? initialValue)
         {
             X509Certificate2? fakeCert = X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate.pfx");
-            X509SigningCredentials? credential = new(fakeCert) { Key = { KeyId = null } };
+            X509SigningCredentials? credential = new(fakeCert) { Key = { KeyId = initialValue } };
 
             OpenIddictSigningCredentialList? sut = CreateSut();
             
@@ -29,11 +32,14 @@ namespace OpenIddict.Server.Tests
             Assert.NotEmpty(sut.ToArray()[0].Key.KeyId);
         }
         
-        [Fact]
-        public void AddRange_WhenNoKidSet_ShouldAddThem()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("  ")]
+        public void AddRange_WhenNoKidSet_ShouldAddThem(string? initialValue)
         {
-            X509SigningCredentials fakeCert1 = new(X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate.pfx")) { Key = { KeyId = null } };
-            X509SigningCredentials fakeCert2 = new(X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate_110526_101226.pem")) { Key = { KeyId = null } };
+            X509SigningCredentials fakeCert1 = new(X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate.pfx")) { Key = { KeyId = initialValue } };
+            X509SigningCredentials fakeCert2 = new(X509Certificate2Helpers.ReadCert("OpenIddict.Server.Tests.Certificate_110526_101226.pem")) { Key = { KeyId = initialValue } };
             
             Print(fakeCert1);
             Print(fakeCert2);
