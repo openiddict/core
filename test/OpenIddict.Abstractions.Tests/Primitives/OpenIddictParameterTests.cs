@@ -60,11 +60,11 @@ public class OpenIddictParameterTests
     public void Count_ReturnsExpectedValueForArray()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.Equal(2, parameter.Count);
@@ -477,12 +477,12 @@ public class OpenIddictParameterTests
     {
         // Arrange, act and assert
         Assert.Equal(
-            new OpenIddictParameter(new string[] { "Fabrikam", "Contoso" }).GetHashCode(),
-            new OpenIddictParameter(new string[] { "Fabrikam", "Contoso" }).GetHashCode());
+            new OpenIddictParameter(["Fabrikam", "Contoso"]).GetHashCode(),
+            new OpenIddictParameter(["Fabrikam", "Contoso"]).GetHashCode());
 
         Assert.NotEqual(
-            new OpenIddictParameter(new string[] { "Fabrikam", "Contoso" }).GetHashCode(),
-            new OpenIddictParameter(new string[] { "Contoso", "Fabrikam" }).GetHashCode());
+            new OpenIddictParameter(["Fabrikam", "Contoso"]).GetHashCode(),
+            new OpenIddictParameter(["Contoso", "Fabrikam"]).GetHashCode());
     }
 
     [Fact]
@@ -623,11 +623,11 @@ public class OpenIddictParameterTests
     public void GetNamedParameter_ReturnsNullForArrays()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.Null(parameter.GetNamedParameter("Fabrikam"));
@@ -720,11 +720,11 @@ public class OpenIddictParameterTests
     public void GetUnnamedParameter_ReturnsNullForOutOfRangeArrayIndex()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.Null(parameter.GetUnnamedParameter(2));
@@ -734,11 +734,11 @@ public class OpenIddictParameterTests
     public void GetUnnamedParameter_ReturnsExpectedNodeForArray()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.Equal("Fabrikam", (string?) parameter.GetUnnamedParameter(0));
@@ -1118,7 +1118,7 @@ public class OpenIddictParameterTests
         Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(42)));
         Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter((long?) 42)));
         Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter("Fabrikam")));
-        Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(new[] { "Fabrikam" })));
+        Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(["Fabrikam"])));
 
         Assert.False(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam""]"))));
@@ -1188,11 +1188,11 @@ public class OpenIddictParameterTests
     public void ToString_ReturnsSimpleRepresentationForArrays()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.Equal("Fabrikam, Contoso", parameter.ToString());
@@ -1325,11 +1325,11 @@ public class OpenIddictParameterTests
     public void TryGetNamedParameter_ReturnsFalseForArrays()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.False(parameter.TryGetNamedParameter("Fabrikam", out var value));
@@ -1429,11 +1429,11 @@ public class OpenIddictParameterTests
     public void GetParameter_ReturnsFalseForOutOfRangeArrayIndex()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.False(parameter.TryGetUnnamedParameter(2, out var value));
@@ -1444,11 +1444,11 @@ public class OpenIddictParameterTests
     public void TryGetUnnamedParameter_ReturnsExpectedNodeForArray()
     {
         // Arrange
-        var parameter = new OpenIddictParameter(new[]
-        {
+        var parameter = new OpenIddictParameter(
+        [
             "Fabrikam",
             "Contoso"
-        });
+        ]);
 
         // Act and assert
         Assert.True(parameter.TryGetUnnamedParameter(0, out var value));
