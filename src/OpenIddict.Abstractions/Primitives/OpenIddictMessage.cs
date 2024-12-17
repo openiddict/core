@@ -432,6 +432,7 @@ public class OpenIddictMessage
                 case OpenIddictConstants.Parameters.Password:
                 case OpenIddictConstants.Parameters.RefreshToken:
                 case OpenIddictConstants.Parameters.Token:
+                case { Length: > 6 } name when name.EndsWith("_token", StringComparison.OrdinalIgnoreCase):
                     writer.WriteStringValue("[redacted]");
                     continue;
             }

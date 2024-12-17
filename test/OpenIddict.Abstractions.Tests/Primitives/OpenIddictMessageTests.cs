@@ -36,11 +36,11 @@ public class OpenIddictMessageTests
         // Arrange, act and assert
         var exception = Assert.Throws<ArgumentException>(delegate
         {
-            return new OpenIddictMessage(new[]
-            {
+            return new OpenIddictMessage(
+            [
                 new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
                 new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
-            });
+            ]);
         });
 
         Assert.Equal("name", exception.ParamName);
@@ -51,10 +51,10 @@ public class OpenIddictMessageTests
     public void Constructor_ImportsParameters()
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, OpenIddictParameter>("parameter", 42)
-        });
+        ]);
 
         // Assert
         Assert.Equal(42, (long) message.GetParameter("parameter"));
@@ -66,10 +66,10 @@ public class OpenIddictMessageTests
     public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
-        });
+        ]);
 
         // Assert
         Assert.Equal(0, message.Count);
@@ -79,11 +79,11 @@ public class OpenIddictMessageTests
     public void Constructor_PreservesEmptyParameters()
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
             new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
-        });
+        ]);
 
         // Assert
         Assert.Equal(2, message.Count);
@@ -93,11 +93,11 @@ public class OpenIddictMessageTests
     public void Constructor_CombinesDuplicateParameters()
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, string?>("parameter", "Fabrikam"),
             new KeyValuePair<string, string?>("parameter", "Contoso")
-        });
+        ]);
 
         // Assert
         Assert.Equal(1, message.Count);
@@ -108,10 +108,10 @@ public class OpenIddictMessageTests
     public void Constructor_SupportsMultiValuedParameters()
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam", "Contoso"])
-        });
+        ]);
 
         // Assert
         Assert.Equal(1, message.Count);
@@ -122,10 +122,10 @@ public class OpenIddictMessageTests
     public void Constructor_ExtractsSingleValuedParameters()
     {
         // Arrange and act
-        var message = new OpenIddictMessage(new[]
-        {
+        var message = new OpenIddictMessage(
+        [
             new KeyValuePair<string, string?[]?>("parameter", ["Fabrikam"])
-        });
+        ]);
 
         // Assert
         Assert.Equal(1, message.Count);
@@ -453,17 +453,20 @@ public class OpenIddictMessageTests
     public void ToString_ReturnsJsonRepresentation()
     {
         // Arrange
-        var message = JsonSerializer.Deserialize<OpenIddictMessage>(@"{
-  ""redirect_uris"": [
-    ""https://client.example.org/callback"",
-    ""https://client.example.org/callback2""
-  ],
-  ""client_name"": ""My Example Client"",
-  ""token_endpoint_auth_method"": ""client_secret_basic"",
-  ""logo_uri"": ""https://client.example.org/logo.png"",
-  ""jwks_uri"": ""https://client.example.org/my_public_keys.jwks"",
-  ""example_extension_parameter"": ""example_value""
-}")!;
+        var message = JsonSerializer.Deserialize<OpenIddictMessage>($$"""
+            {
+              "redirect_uris": [
+                "https://client.example.org/callback",
+                "https://client.example.org/callback2"
+              ],
+              "client_name": "My Example Client",
+              "token_endpoint_auth_method": "client_secret_basic",
+              "logo_uri": "https://client.example.org/logo.png",
+              "jwks_uri": "https://client.example.org/my_public_keys.jwks",
+              "example_extension_parameter": "example_value",
+              "_token": "value"
+            }
+            """)!;
 
         var options = new JsonSerializerOptions
         {
@@ -486,6 +489,7 @@ public class OpenIddictMessageTests
     [InlineData(Parameters.Password)]
     [InlineData(Parameters.RefreshToken)]
     [InlineData(Parameters.Token)]
+    [InlineData("custom_token")]
     public void ToString_ExcludesSensitiveParameters(string parameter)
     {
         // Arrange

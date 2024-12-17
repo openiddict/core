@@ -434,7 +434,7 @@ internal static class OpenIddictHelpers
         }
 
         return query.TrimStart(Separators.QuestionMark[0])
-            .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+            .Split([Separators.Ampersand[0], Separators.Semicolon[0]], StringSplitOptions.RemoveEmptyEntries)
             .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
             .Select(static parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
@@ -458,7 +458,7 @@ internal static class OpenIddictHelpers
         }
 
         return fragment.TrimStart(Separators.Hash[0])
-            .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+            .Split([Separators.Ampersand[0], Separators.Semicolon[0]], StringSplitOptions.RemoveEmptyEntries)
             .Select(static parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
             .Select(static parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
