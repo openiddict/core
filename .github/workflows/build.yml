@@ -154,15 +154,13 @@ jobs:
       with:
         name: packages-windows
 
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@a21f25cd3998bf370fde17e3f1b4c12c175172f9 # v2.0.0
-      with:
-        nuget-version: '5.11.0'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
 
     - name: Push packages to MyGet.org
       env:
         MYGET_API_KEY: ${{ secrets.MYGET_API_KEY }}
-      run: nuget push "*.nupkg" -ApiKey "${MYGET_API_KEY}" -SkipDuplicate -Source https://www.myget.org/F/openiddict/api/v3/index.json
+      run: dotnet nuget push "*.nupkg" --api-key "${MYGET_API_KEY}" --skip-duplicate --source https://www.myget.org/F/openiddict/api/v3/index.json
 
   push-packages-nuget:
     needs: [ build, validate-packages ]
@@ -176,12 +174,10 @@ jobs:
       with:
         name: packages-windows
 
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@a21f25cd3998bf370fde17e3f1b4c12c175172f9 # v2.0.0
-      with:
-        nuget-version: '5.11.0'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
 
     - name: Push packages to NuGet.org
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: nuget push "*.nupkg" -ApiKey "${NUGET_API_KEY}" -SkipDuplicate -Source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push "*.nupkg" --api-key "${NUGET_API_KEY}" --skip-duplicate --source https://api.nuget.org/v3/index.json
