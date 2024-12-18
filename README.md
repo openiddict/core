@@ -94,25 +94,41 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 
 --------------
 
-## Support
+## Support policy
 
 If you need support, please first make sure you're [sponsoring the project](https://github.com/sponsors/kevinchalet).
 Depending on the tier you selected, you can open a GitHub ticket or send an email to contact@openiddict.com for private support.
-
 Alternatively, you can also post your question on [Gitter](https://app.gitter.im/#/room/#openiddict_openiddict-core:gitter.im).
 
-> [!IMPORTANT]
-> With OpenIddict 5.x now being generally available, the previous version, OpenIddict 4.x, stops being supported and won't receive bug
-> fixes or security updates. As such, it is recommended to migrate to OpenIddict 5.x to continue receiving bug and security fixes.
-> 
-> **There are, however, two exceptions to this policy**:
->   - **ABP Framework 7.x users will still receive patches for OpenIddict 4.x for as long as ABP Framework 7.x itself is supported by Volosoft**
->   (typically a year following the release of ABP 8.x), whether they have a commercial ABP license or just use the free packages.
-> 
->   - **OpenIddict sponsors who have opted for a $250+/month sponsorship are now offered extended support:**
->     - $250/month sponsors get full support for OpenIddict 4.x until June 18, 2024 (6 months).
->     - $500/month sponsors get full support for OpenIddict 4.x until December 18, 2024 (12 months).
->     - $1,000/month sponsors get full support for OpenIddict 4.x until December 18, 2025 (24 months).
+**Support is only offered for the latest stable version of OpenIddict**. There are, however, two exceptions to this policy:
+  - **ABP Framework users receive patches for OpenIddict for as long as ABP Framework itself is supported by Volosoft**
+  (typically a year following the release of a major ABP version), whether they have a commercial ABP license or just use the free packages.
+
+  | OpenIddict branch | ABP Framework branch | End of support date (estimated) |
+  |-------------------|----------------------|---------------------------------|
+  | 4.x               | 7.x                  | December 19, 2024               |
+  | 5.x               | 8.x                  | November 19, 2025               |
+  | 6.x (current)     | 9.x                  | Currently supported             |
+
+  - **OpenIddict sponsors are offered extended support depending on the selected sponsorship tier:**
+    - $100/month sponsors get full support for the previous version 1 month following the release of a new major version.
+    - $250/month sponsors get full support for the previous version 6 months following the release of a new major version.
+    - $500/month sponsors get full support for the previous version 12 months following the release of a new major version.
+    - $1,000/month sponsors get full support for the previous version 24 months following the release of a new major version.
+
+  | OpenIddict branch | Sponsorship tier       | End of support date |
+  |-------------------|------------------------|---------------------|
+  | 4.x               | $100/month (or more)   | January 18, 2024    |
+  | 4.x               | $250/month (or more)   | June 18, 2024       |
+  | 4.x               | $500/month (or more)   | December 18, 2024   |
+  | 4.x               | $1,000/month (or more) | December 18, 2025   |
+  |                   |                        |                     |
+  | 5.x               | $100/month (or more)   | January 17, 2025    |
+  | 5.x               | $250/month (or more)   | June 17, 2025       |
+  | 5.x               | $500/month (or more)   | December 17, 2025   |
+  | 5.x               | $1,000/month (or more) | December 17, 2026   |
+  |                   |                        |                     |
+  | 6.x (current)     | Any                    | Currently supported |
 
 --------------
 
