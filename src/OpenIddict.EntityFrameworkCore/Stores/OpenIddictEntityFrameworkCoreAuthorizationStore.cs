@@ -308,7 +308,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
         return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
                 join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
-                where application.Id!.Equals(identifier)
+                where application.Id!.Equals(key)
                 select authorization).AsAsyncEnumerable(cancellationToken);
     }
 
