@@ -2046,6 +2046,25 @@
   </Provider>
 
   <!--
+                                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                   ██ ███ █ █▀▄████▄ ▄██ ▄▄▀██
+                                                   ███ █ ██ ▄▀██████ ███ ██ ██
+                                                   ███▄▀▄██ ██ ████▀ ▀██ ▀▀ ██
+                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="VkId" Id="9bf89c19-401b-4076-893e-a4136e719432" >
+    <Environment Issuer="https://id.vk.com/">
+      <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
+                     TokenEndpoint="https://id.vk.com/oauth2/auth"
+                     UserInfoEndpoint="https://id.vk.com/oauth2/user_info">
+        <CodeChallengeMethod Value="S256" />
+        <ResponseType Value="code"></ResponseType>
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▄█▄▀█▀▄██
                                                 ██ █ █ ██ ▄▄▄██ ▄▄▀██ ▄▄▄███ ████
@@ -2171,8 +2190,27 @@
   -->
 
   <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
-            Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
+              Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
+  </Provider>  
+
+  <!--
+                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                           ██ ███ █ ▄▄▀██ ▀██ ██ ▄▄▀██ ▄▄▄██▄▀█▀▄██
+                                           ██▄▀▀▀▄█ ▀▀ ██ █ █ ██ ██ ██ ▄▄▄████ ████
+                                           ████ ███ ██ ██ ██▄ ██ ▀▀ ██ ▀▀▀██▀▄█▄▀██
+                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Yandex" Id="313298d4-d210-4541-a348-96ced013dab1" >
+    <Environment Issuer="https://oauth/yandex.ru/">
+      <Configuration AuthorizationEndpoint="https://oauth.yandex.ru/authorize"
+                     RevokationEndpoint="https://oauth.yandex.ru/revoke_token"
+                     TokenEndpoint="https://oauth.yandex.ru/token"
+                     UserInfoEndpoint="https://login.yandex.ru/info">
+        <ResponseType Value="code"></ResponseType>
+      </Configuration>
+    </Environment>
   </Provider>
 
   <!--
