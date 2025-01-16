@@ -639,6 +639,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.TokenRequest.UserCode = code;
             }
+            else if(context.Registration.ProviderType is ProviderTypes.VkId)
+            {
+                if (!context.Request.TryGetParameter("device_id", out var deviceId) ||
+                    deviceId.Value is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0427));
+                }
+
+                context.TokenRequest.AddParameter("device_id", deviceId.ToString());
+            }
 
             return default;
         }

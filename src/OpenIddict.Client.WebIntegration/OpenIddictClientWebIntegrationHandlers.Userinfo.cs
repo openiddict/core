@@ -235,6 +235,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Request["f"] = "json";
                 }
+                else if(context.Registration.ProviderType is ProviderTypes.VkId)
+                {
+                    if(context.Registration.ClientId is null)
+                        throw new ArgumentNullException(nameof(context.Registration.ClientId));
+
+                    context.Request.AddParameter("client_id", context.Registration.ClientId);
+                }
 
                 return default;
             }
