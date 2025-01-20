@@ -235,6 +235,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Request["f"] = "json";
                 }
+                // To get user info for VK ID provider we need to attach "client_id" required parameter
                 else if(context.Registration.ProviderType is ProviderTypes.VkId)
                 {
                     if(context.Registration.ClientId is null)
