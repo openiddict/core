@@ -2054,7 +2054,7 @@
   -->
 
   <Provider Name="VkId" Id="9bf89c19-401b-4076-893e-a4136e719432" 
-            Documentation="https://id.vk.com/about/business/go/docs/ru/vkid/latest/oauth-vk">
+            Documentation="https://id.vk.com/about/business/go/docs/en/vkid/latest/oauth-vk">
     <Environment Issuer="https://id.vk.com/">
       <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
                      TokenEndpoint="https://id.vk.com/oauth2/auth"
@@ -2204,7 +2204,7 @@
   -->
 
   <Provider Name="Yandex" Id="313298d4-d210-4541-a348-96ced013dab1"
-            Documentation="https://yandex.ru/dev/id/doc/ru/">
+            Documentation="https://yandex.ru/dev/id/doc/en/">
     <Environment Issuer="https://oauth.yandex.ru/">
       <Configuration AuthorizationEndpoint="https://oauth.yandex.ru/authorize"
                      RevokationEndpoint="https://oauth.yandex.ru/revoke_token"
