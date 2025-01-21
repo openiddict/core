@@ -2191,7 +2191,7 @@
   -->
 
   <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
-              Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
+            Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
   </Provider>  
 
