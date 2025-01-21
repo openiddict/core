@@ -2208,9 +2208,7 @@
       <Configuration AuthorizationEndpoint="https://oauth.yandex.ru/authorize"
                      RevokationEndpoint="https://oauth.yandex.ru/revoke_token"
                      TokenEndpoint="https://oauth.yandex.ru/token"
-                     UserInfoEndpoint="https://login.yandex.ru/info">
-        <ResponseType Value="code"></ResponseType>
-      </Configuration>
+                     UserInfoEndpoint="https://login.yandex.ru/info" />
     </Environment>
   </Provider>
 
