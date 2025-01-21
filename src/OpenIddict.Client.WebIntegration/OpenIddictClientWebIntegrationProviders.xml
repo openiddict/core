@@ -2060,7 +2060,6 @@
                      TokenEndpoint="https://id.vk.com/oauth2/auth"
                      UserInfoEndpoint="https://id.vk.com/oauth2/user_info">
         <CodeChallengeMethod Value="S256" />
-        <ResponseType Value="code"></ResponseType>
       </Configuration>
     </Environment>
   </Provider>
