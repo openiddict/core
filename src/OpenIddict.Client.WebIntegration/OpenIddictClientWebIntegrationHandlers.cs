@@ -639,17 +639,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.TokenRequest.UserCode = code;
             }
-            // To exchange the authorization code for tokens for VK ID provider
-            // we need to attach "device_id" required parameter
+
+            // VK ID requires flowing the non-standard "device_id" parameter
+            // from authorization responses to token requests.
             else if (context.Registration.ProviderType is ProviderTypes.VkId)
             {
-                if (!context.Request.TryGetParameter("device_id", out var deviceId) ||
-                    deviceId.Value is null)
-                {
-                    throw new InvalidOperationException("device_id parameter can`t be empty");
-                }
-
-                context.TokenRequest.AddParameter("device_id", deviceId.ToString());
+                context.TokenRequest["device_id"] = context.Request["device_id"];
             }
 
             return default;
