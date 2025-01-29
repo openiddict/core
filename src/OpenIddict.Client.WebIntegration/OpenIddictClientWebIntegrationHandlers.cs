@@ -1462,15 +1462,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp      or ProviderTypes.Box        or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer        or ProviderTypes.Discord    or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook      or ProviderTypes.Gitee      or
-                ProviderTypes.GitHub      or ProviderTypes.Harvest       or ProviderTypes.Kook       or
-                ProviderTypes.Kroger      or ProviderTypes.Lichess       or ProviderTypes.Mastodon   or
-                ProviderTypes.Meetup      or ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or
-                ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
-                ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
-                ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Zoom
+                ProviderTypes.Airtable    or ProviderTypes.Basecamp  or ProviderTypes.Box           or
+                ProviderTypes.Dailymotion or ProviderTypes.Deezer    or ProviderTypes.Discord       or
+                ProviderTypes.Disqus      or ProviderTypes.Facebook  or ProviderTypes.GitCode       or
+                ProviderTypes.Gitee       or ProviderTypes.GitHub    or ProviderTypes.Harvest       or 
+                ProviderTypes.Kook        or ProviderTypes.Kroger    or ProviderTypes.Lichess       or 
+                ProviderTypes.Mastodon    or ProviderTypes.Meetup    or ProviderTypes.Nextcloud     or
+                ProviderTypes.Patreon     or ProviderTypes.Pipedrive or ProviderTypes.Reddit        or 
+                ProviderTypes.Smartsheet  or ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or 
+                ProviderTypes.Todoist     or ProviderTypes.Twitter   or ProviderTypes.Weibo         or
+                ProviderTypes.Zoom 
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:

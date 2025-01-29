@@ -714,6 +714,26 @@
   </Provider>
 
   <!--
+                                          ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                          ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ▄▄▀██ ▄▄▄ ██ ▄▄▀██ ▄▄▄██
+                                          ██ █▀▀██ ████ ████ █████ ███ ██ ██ ██ ▄▄▄██
+                                          ██ ▀▀▄█▀ ▀███ ████ ▀▀▄██ ▀▀▀ ██ ▀▀ ██ ▀▀▀██
+                                          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="GitCode" Id="70569d72-89b7-4db7-aa8a-3d10106c81a0"
+            Documentation="https://docs.gitcode.com/en/docs/apis/post-oauth-token-grant-type-authorization-code-code-code-client-id-client-id-client-secret-client-secret/">
+    <Environment Issuer="https://gitcode.com/">
+      <Configuration AuthorizationEndpoint="https://gitcode.com/oauth/authorize"
+                     TokenEndpoint="https://gitcode.com/oauth/token"
+                     UserInfoEndpoint="https://api.gitcode.com/api/v5/user">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
+  <!--
                                                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                  ██ ▄▄ █▄ ▄█▄▄ ▄▄██ ▄▄▄██ ▄▄▄██
                                                  ██ █▀▀██ ████ ████ ▄▄▄██ ▄▄▄██
