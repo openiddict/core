@@ -389,7 +389,9 @@ public class OpenIddictClientService
                 CancellationToken = request.CancellationToken,
                 CodeChallengeMethod = request.CodeChallengeMethod,
                 GrantType = request.GrantType,
+                IdentityTokenHint = request.IdentityTokenHint,
                 Issuer = request.Issuer,
+                LoginHint = request.LoginHint,
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
                 RegistrationId = request.RegistrationId,
@@ -1399,7 +1401,9 @@ public class OpenIddictClientService
             var context = new ProcessSignOutContext(transaction)
             {
                 CancellationToken = request.CancellationToken,
+                IdentityTokenHint = request.IdentityTokenHint,
                 Issuer = request.Issuer,
+                LoginHint = request.LoginHint,
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
                 RegistrationId = request.RegistrationId,

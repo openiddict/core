@@ -166,6 +166,17 @@ public static class OpenIddictClientModels
         public string? GrantType { get; init; }
 
         /// <summary>
+        /// Gets or sets the optional identity token hint that will
+        /// be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? IdentityTokenHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? LoginHint { get; set; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
@@ -252,6 +263,17 @@ public static class OpenIddictClientModels
         /// used to determine if the operation was aborted.
         /// </summary>
         public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the optional identity token hint that will
+        /// be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? IdentityTokenHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional login hint that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? LoginHint { get; set; }
 
         /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
