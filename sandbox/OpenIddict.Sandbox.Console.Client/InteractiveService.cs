@@ -126,6 +126,7 @@ public class InteractiveService : BackgroundService
                         var nonce = (await _service.SignOutInteractivelyAsync(new()
                         {
                             CancellationToken = stoppingToken,
+                            IdentityTokenHint = response.BackchannelIdentityToken ?? response.FrontchannelIdentityToken,
                             ProviderName = provider
                         })).Nonce;
 
