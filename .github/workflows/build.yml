@@ -23,6 +23,9 @@ jobs:
     name: build-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
+    outputs:
+      dotnet-sdk-version: ${{ steps.setup-dotnet.outputs.dotnet-version }}
+
     permissions:
       attestations: write
       contents: read
@@ -47,6 +50,10 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+      id: setup-dotnet
 
     # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
     # build numbers every day like Azure DevOps does. To balance these two requirements, set the official
@@ -115,18 +122,14 @@ jobs:
         name: packages-windows
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
-
-    # Note: the dotnet-validate tool requires .NET 6.0, which is no longer installed by default.
-    - name: Setup .NET
-      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
 
     - name: Validate NuGet packages
       shell: pwsh
       run: |
-        dotnet tool install --global dotnet-validate --version 0.0.1-preview.304
+        dotnet tool install --global dotnet-validate --version 0.0.1-preview.304 --allow-roll-forward
         $packages = Get-ChildItem -Filter "*.nupkg" | ForEach-Object { $_.FullName }
         $invalidPackages = 0
         foreach ($package in $packages) {
@@ -155,7 +158,9 @@ jobs:
         name: packages-windows
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+      with:
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
 
     - name: Push packages to MyGet.org
       env:
@@ -175,7 +180,9 @@ jobs:
         name: packages-windows
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+      with:
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
 
     - name: Push packages to NuGet.org
       env:
