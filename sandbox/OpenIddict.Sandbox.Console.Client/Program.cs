@@ -96,6 +96,24 @@ var host = new HostBuilder()
                                   .SetClientSecret("1f18c22f766e44d7bd4ea4a6510b9e337d48ab38")
                                   .SetRedirectUri("callback/login/github");
                        })
+                       .AddYandex(options =>
+                       {
+                           options.SetClientId("319737032de44c73b2bbaf81a184e742");
+                           options.SetClientSecret("f01e34a090564b60ae78629616f581db");
+                           options.SetRedirectUri("callback/login/yandex");
+                           options.AddScopes(
+                               "login:email",
+                               "login:info"
+                           );
+                       })
+                       .AddVkId(options =>
+                       {
+                           options.SetClientId("52043315");
+                           options.SetClientSecret("0jZ74hcVM1e6nesBsa27");
+                           options.SetRedirectUri("callback/login/vkid");
+                           options.AddScopes(
+                               "email");
+                       })
                        .AddTwitter(options =>
                        {
                            options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")

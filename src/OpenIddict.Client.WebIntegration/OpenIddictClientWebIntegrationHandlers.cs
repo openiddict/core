@@ -1370,11 +1370,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Shopify returns the email address as a custom "associated_user/email" node in token responses:
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
 
-                // VkId returns the email address as part of a custom "user" node.
-                // Note: email node is not a part of standard basic scope
-                // (https://id.vk.com/about/business/go/docs/en/vkid/latest/vk-id/connection/api-integration/api-description#App-access-to-user-data)
-                ProviderTypes.VkId => (string?) context.UserInfoResponse?["user"]?["email"],
-
                 // Yandex returns the email address as a custom "default_email" node:
                 // Note: email node is not a part of standard basic scope
                 // (https://yandex.ru/dev/id/doc/en/user-information#common)
@@ -1393,7 +1388,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => (string?) context.UserInfoResponse?["username"],
 
                 // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
-                ProviderTypes.Basecamp or ProviderTypes.Harvest
+                ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
                     when context.UserInfoResponse?.HasParameter("first_name") is true &&
                          context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
@@ -1440,7 +1435,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // These providers return the username as a custom "display_name" node:
-                ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Zoom
+                ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Yandex or 
+                ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:
@@ -1458,22 +1454,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Typeform returns the username as a custom "alias" node:
                 ProviderTypes.Typeform => (string?) context.UserInfoResponse?["alias"],
 
-                // VK ID returns the username as a custom "user/first_name" and "user/last_name" nodes
-                // (https://id.vk.com/about/business/go/docs/en/vkid/latest/vk-id/connection/api-integration/api-description#App-access-to-user-data):
-                ProviderTypes.VkId 
-                    when context.UserInfoResponse?["user"]?["first_name"] is not null &&
-                         context.UserInfoResponse?["user"]?["last_name"] is not null
-                    => $"{(string?) context.UserInfoResponse?["user"]?["first_name"]} {(string?) context.UserInfoResponse?["user"]?["last_name"]}",
-
-                // Yandex returns standard "login" node, if scope has "info" premission we have a set of names (first_name, last_name,
-                // display_name, real_name). (https://yandex.ru/dev/id/doc/en/user-information#name-access):
-                ProviderTypes.Yandex
-                    when context.UserInfoResponse?["login"] is not null => (string?) context.UserInfoResponse?["login"],
-                ProviderTypes.Yandex
-                    when context.UserInfoResponse?["display_name"] is not null => (string?) context.UserInfoResponse?["display_name"],
-                ProviderTypes.Yandex
-                    when context.UserInfoResponse?["real_name"] is not null => (string?) context.UserInfoResponse?["real_name"],
-
                 // Zoho returns the username as a custom "Display_Name" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["Display_Name"],
 
@@ -1484,7 +1464,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // These providers return the user identifier as a custom "user_id" node:
                 ProviderTypes.Amazon        or ProviderTypes.HubSpot or
-                ProviderTypes.StackExchange or ProviderTypes.Typeform
+                ProviderTypes.StackExchange or ProviderTypes.Typeform or
+                ProviderTypes.VkId
                     => (string?) context.UserInfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
@@ -1503,7 +1484,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Meetup      or ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or
                 ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
                 ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
-                ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Zoom
+                ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Yandex     or 
+                ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
@@ -1559,14 +1541,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Vimeo => (string?) context.UserInfoResponse?["uri"] is string uri &&
                     uri.StartsWith("/users/", StringComparison.Ordinal) ? uri["/users/".Length..] : null,
 
-                // VK ID returns the user identifier as a custom "user/user_id" node:
-                ProviderTypes.VkId => (string?) context.UserInfoResponse?["user"]?["user_id"],
-
                 // WordPress returns the user identifier as a custom "ID" node:
                 ProviderTypes.WordPress => (string?) context.UserInfoResponse?["ID"],
-
-                // Yandex returns the user identifier as a custom "id" node:
-                ProviderTypes.Yandex => (string?) context.UserInfoResponse?["id"],
 
                 // WordPress returns the user identifier as a custom "ZUID" node:
                 ProviderTypes.Zoho => (string?) context.UserInfoResponse?["ZUID"],
