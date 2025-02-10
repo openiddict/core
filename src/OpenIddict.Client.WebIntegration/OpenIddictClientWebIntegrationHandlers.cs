@@ -391,6 +391,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
+            // VK ID uses a non-standard "device_id" parameter in authorization responses.
+            else if (context.Registration.ProviderType is ProviderTypes.VkId)
+            {
+                var identifier = (string?) context.Request["device_id"];
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029("device_id"),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Store the device identifier as an authentication property
+                // so it can be resolved later to make refresh token requests.
+                context.Properties[VkId.Properties.DeviceId] = identifier;
+            }
+
             // Zoho returns the region of the authenticated user as a non-standard "location" parameter
             // that must be used to compute the address of the token and userinfo endpoints.
             else if (context.Registration.ProviderType is ProviderTypes.Zoho)
@@ -407,7 +426,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Ensure the specified location corresponds to well-known region.
-                if (location.ToUpperInvariant() is not ( "AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
+                if (location.ToUpperInvariant() is not ("AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -640,11 +659,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.UserCode = code;
             }
 
-            // VK ID requires flowing the non-standard "device_id" parameter
-            // from authorization responses to token requests.
+            // VK ID requires attaching a non-standard "device_id" parameter to all token requests.
+            // This parameter is either resolved from the authorization response (for the authorization
+            // code or hybrid grants) or manually provided by the application for other grant types.
             else if (context.Registration.ProviderType is ProviderTypes.VkId)
             {
-                context.TokenRequest["device_id"] = context.Request?["device_id"];
+                if (!context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) ||
+                    string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
+                }
+
+                context.TokenRequest["device_id"] = identifier;
             }
 
             return default;
@@ -1371,8 +1397,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
 
                 // Yandex returns the email address as a custom "default_email" node:
-                // Note: email node is not a part of standard basic scope
-                // (https://yandex.ru/dev/id/doc/en/user-information#common)
                 ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
 
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
@@ -1387,7 +1411,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Trakt        or ProviderTypes.WordPress
                     => (string?) context.UserInfoResponse?["username"],
 
-                // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
+                // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
                 ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
                     when context.UserInfoResponse?.HasParameter("first_name") is true &&
                          context.UserInfoResponse?.HasParameter("last_name")  is true
@@ -1435,8 +1459,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // These providers return the username as a custom "display_name" node:
-                ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Yandex or 
-                ProviderTypes.Zoom
+                ProviderTypes.Spotify or ProviderTypes.StackExchange or
+                ProviderTypes.Yandex  or ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:

@@ -2080,10 +2080,13 @@
                      TokenEndpoint="https://id.vk.com/oauth2/auth"
                      UserInfoEndpoint="https://id.vk.com/oauth2/user_info">
         <CodeChallengeMethod Value="S256" />
+
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
     </Environment>
+
+    <Property Name="DeviceId" DictionaryKey=".device_id" />
   </Provider>
 
   <!--
@@ -2224,14 +2227,12 @@
                                            ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="Yandex" Id="313298d4-d210-4541-a348-96ced013dab1"
-            Documentation="https://yandex.ru/dev/id/doc/en/">
+  <Provider Name="Yandex" Id="313298d4-d210-4541-a348-96ced013dab1" Documentation="https://yandex.ru/dev/id/doc/en/">
     <Environment Issuer="https://oauth.yandex.ru/">
       <Configuration AuthorizationEndpoint="https://oauth.yandex.ru/authorize"
-                     RevokationEndpoint="https://oauth.yandex.ru/revoke_token"
+                     RevocationEndpoint="https://oauth.yandex.ru/revoke_token"
                      TokenEndpoint="https://oauth.yandex.ru/token"
                      UserInfoEndpoint="https://login.yandex.ru/info">
-
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
