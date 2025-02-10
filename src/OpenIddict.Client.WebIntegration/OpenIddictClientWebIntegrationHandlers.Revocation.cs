@@ -55,9 +55,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Weibo and Yandex don't support the standard "token" parameter and
+                // Weibo, VK ID and Yandex don't support the standard "token" parameter and
                 // require using the non-standard "access_token" parameter instead.
-                if (context.Registration.ProviderType is ProviderTypes.Weibo or ProviderTypes.Yandex)
+                if (context.Registration.ProviderType is ProviderTypes.Weibo or ProviderTypes.VkId or ProviderTypes.Yandex)
                 {
                     context.Request.AccessToken = context.Token;
                     context.Request.Token = null;

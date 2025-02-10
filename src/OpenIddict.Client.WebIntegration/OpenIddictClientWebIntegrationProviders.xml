@@ -2077,6 +2077,7 @@
             Documentation="https://id.vk.com/about/business/go/docs/en/vkid/latest/oauth-vk">
     <Environment Issuer="https://id.vk.com/">
       <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
+                     RevocationEndpoint="https://id.vk.com/oauth2/revoke"
                      TokenEndpoint="https://id.vk.com/oauth2/auth"
                      UserInfoEndpoint="https://id.vk.com/oauth2/user_info">
         <CodeChallengeMethod Value="S256" />
