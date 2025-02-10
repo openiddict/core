@@ -2073,7 +2073,7 @@
                                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
   -->
 
-  <Provider Name="VkId" Id="9bf89c19-401b-4076-893e-a4136e719432" 
+  <Provider Name="VkId" DisplayName="VK ID" Id="9bf89c19-401b-4076-893e-a4136e719432" 
             Documentation="https://id.vk.com/about/business/go/docs/en/vkid/latest/oauth-vk">
     <Environment Issuer="https://id.vk.com/">
       <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
