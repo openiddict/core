@@ -21,6 +21,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Revocation request preparation:
              */
+            MapNonStandardRequestParameters.Descriptor,
             OverrideHttpMethod.Descriptor,
             AttachBearerAccessToken.Descriptor,
 
@@ -29,6 +30,42 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              */
             NormalizeContentType.Descriptor
         ]);
+
+        /// <summary>
+        /// Contains the logic responsible for mapping non-standard request parameters
+        /// to their standard equivalent for the providers that require it.
+        /// </summary>
+        public sealed class MapNonStandardRequestParameters : IOpenIddictClientHandler<PrepareRevocationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareRevocationRequestContext>()
+                    .UseSingletonHandler<MapNonStandardRequestParameters>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareRevocationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Yandex doesn't support the standard "token" parameter and requires
+                // using the non-standard "access_token" parameter instead.
+                if (context.Registration.ProviderType is ProviderTypes.VkId)
+                {
+                    context.Request.AccessToken = context.Token;
+                    context.Request.Token = null;
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for overriding the HTTP method for the providers that require it.
@@ -61,7 +98,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 request.Method = context.Registration.ProviderType switch
                 {
-
                     ProviderTypes.Zendesk => HttpMethod.Delete,
 
                     _ => request.Method
