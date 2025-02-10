@@ -105,6 +105,8 @@ var host = new HostBuilder()
                                "login:email",
                                "login:info"
                            );
+                           options.SetDeviceId("8447D3C9-C858-41B4-8DA9-80A7B9131C96");
+                           options.SetDeviceName("test device");
                        })
                        .AddVkId(options =>
                        {
