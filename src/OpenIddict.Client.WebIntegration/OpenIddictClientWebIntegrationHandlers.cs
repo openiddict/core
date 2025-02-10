@@ -660,17 +660,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             }
 
             // VK ID requires attaching a non-standard "device_id" parameter to all token requests.
+            //
             // This parameter is either resolved from the authorization response (for the authorization
             // code or hybrid grants) or manually provided by the application for other grant types.
             else if (context.Registration.ProviderType is ProviderTypes.VkId)
             {
-                if (!context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) ||
-                    string.IsNullOrEmpty(identifier))
+                context.TokenRequest["device_id"] = context.GrantType switch
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
-                }
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit => context.Request["device_id"],
 
-                context.TokenRequest["device_id"] = identifier;
+                    _ when context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) &&
+                        !string.IsNullOrEmpty(identifier) => identifier,
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0467))
+                };
             }
 
             return default;
