@@ -644,7 +644,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // from authorization responses to token requests.
             else if (context.Registration.ProviderType is ProviderTypes.VkId)
             {
-                context.TokenRequest["device_id"] = context.Request["device_id"];
+                context.TokenRequest["device_id"] = context.Request?["device_id"];
             }
 
             return default;
