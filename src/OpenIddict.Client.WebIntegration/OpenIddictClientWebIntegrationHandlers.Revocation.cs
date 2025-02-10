@@ -57,7 +57,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // Yandex doesn't support the standard "token" parameter and requires
                 // using the non-standard "access_token" parameter instead.
-                if (context.Registration.ProviderType is ProviderTypes.VkId)
+                if (context.Registration.ProviderType is ProviderTypes.Yandex)
                 {
                     context.Request.AccessToken = context.Token;
                     context.Request.Token = null;
