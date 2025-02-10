@@ -54,6 +54,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          * Revocation processing:
          */
         OverrideRevocationEndpointClientAuthenticationMethod.Descriptor,
+        AttachAdditionalRevocationRequestParameters.Descriptor,
         AttachNonStandardRevocationClientAssertionClaims.Descriptor,
         AttachRevocationRequestNonStandardClientCredentials.Descriptor,
 
@@ -2014,6 +2015,49 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching additional parameters
+    /// to the revocation request for the providers that require it.
+    /// </summary>
+    public sealed class AttachAdditionalRevocationRequestParameters : IOpenIddictClientHandler<ProcessRevocationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
+                .UseSingletonHandler<AttachAdditionalRevocationRequestParameters>()
+                .SetOrder(AttachRevocationRequestParameters.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRevocationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Yandex requires attaching a non-standard "device_id" parameter to revocation requests.
+            // This parameter must be manually provided by the application via an authentication property.
+            if (context.Registration.ProviderType is ProviderTypes.Yandex)
+            {
+                if (!context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) ||
+                     string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
+                }
+
+                context.RevocationRequest["device_id"] = identifier;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for adding non-standard claims to the client
     /// assertions used for the revocation endpoint for the providers that require it.
     /// </summary>
@@ -2097,14 +2141,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.RevocationRequest.ClientSecret = context.RevocationRequest.ClientAssertion;
                 context.RevocationRequest.ClientAssertion = null;
                 context.RevocationRequest.ClientAssertionType = null;
-            }
-
-            // Weibo implements a non-standard client authentication method for its endpoints that
-            // requires sending the token as "access_token" instead of the standard "token" parameter.
-            else if (context.Registration.ProviderType is ProviderTypes.Weibo)
-            {
-                context.RevocationRequest.AccessToken = context.RevocationRequest.Token;
-                context.RevocationRequest.Token = null;
             }
 
             return default;

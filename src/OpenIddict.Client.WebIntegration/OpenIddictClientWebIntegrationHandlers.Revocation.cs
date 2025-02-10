@@ -55,12 +55,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Yandex doesn't support the standard "token" parameter and requires
-                // using the non-standard "access_token" parameter instead.
-                if (context.Registration.ProviderType is ProviderTypes.Yandex)
+                // Weibo and Yandex don't support the standard "token" parameter and
+                // require using the non-standard "access_token" parameter instead.
+                if (context.Registration.ProviderType is ProviderTypes.Weibo or ProviderTypes.Yandex)
                 {
                     context.Request.AccessToken = context.Token;
                     context.Request.Token = null;
+                    context.Request.TokenTypeHint = null;
                 }
 
                 return default;

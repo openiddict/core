@@ -1708,7 +1708,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>A token must be specified when using revocation.</value>
   </data>
   <data name="ID0467" xml:space="preserve">
-    <value>The VK ID integration requires sending the device identifier to the token endpoint. For that, attach a ".device_id" authentication property containing the device identifier returned by the authorization endpoint.</value>
+    <value>The VK ID integration requires sending the device identifier to the token and revocation endpoints. For that, attach a ".device_id" authentication property containing the device identifier returned by the authorization endpoint.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
