@@ -2239,7 +2239,7 @@
       </Configuration>
     </Environment>
 
-    <Property Name="DeviceId" DictionaryKey=".device_id" />
+    <Property Name="DeviceId"   DictionaryKey=".device_id" />
     <Property Name="DeviceName" DictionaryKey=".device_name" />
 
     <Setting PropertyName="DeviceId" ParameterName="identifier" Type="String" Required="false"
