@@ -54,7 +54,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          * Revocation processing:
          */
         OverrideRevocationEndpointClientAuthenticationMethod.Descriptor,
-        AttachAdditionalRevocationRequestParameters.Descriptor,
         AttachNonStandardRevocationClientAssertionClaims.Descriptor,
         AttachRevocationRequestNonStandardClientCredentials.Descriptor,
 
@@ -1962,6 +1961,27 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["language"] = settings.Language;
             }
 
+            // Yandex allows sending optional "device_id" and "device_name" parameters.
+            else if (context.Registration.ProviderType is ProviderTypes.Yandex)
+            {
+                var settings = context.Registration.GetYandexSettings();
+
+                if (!context.Properties.TryGetValue(Yandex.Properties.DeviceId, out string? identifier) ||
+                     string.IsNullOrEmpty(identifier))
+                {
+                    identifier = settings.DeviceId;
+                }
+
+                if (!context.Properties.TryGetValue(Yandex.Properties.DeviceName, out string? name) ||
+                     string.IsNullOrEmpty(name))
+                {
+                    name = settings.DeviceName;
+                }
+
+                context.Request["device_id"] = identifier;
+                context.Request["device_name"] = name;
+            }
+
             // By default, Zoho doesn't return a refresh token but
             // allows sending an "access_type" parameter to retrieve one.
             else if (context.Registration.ProviderType is ProviderTypes.Zoho)
@@ -2009,49 +2029,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 _ => context.RevocationEndpointClientAuthenticationMethod
             };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for attaching additional parameters
-    /// to the revocation request for the providers that require it.
-    /// </summary>
-    public sealed class AttachAdditionalRevocationRequestParameters : IOpenIddictClientHandler<ProcessRevocationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
-                .UseSingletonHandler<AttachAdditionalRevocationRequestParameters>()
-                .SetOrder(AttachRevocationRequestParameters.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRevocationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.RevocationRequest is not null, SR.GetResourceString(SR.ID4008));
-
-            // Yandex requires attaching a non-standard "device_id" parameter to revocation requests.
-            // This parameter must be manually provided by the application via an authentication property.
-            if (context.Registration.ProviderType is ProviderTypes.Yandex)
-            {
-                if (!context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) ||
-                     string.IsNullOrEmpty(identifier))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
-                }
-
-                context.RevocationRequest["device_id"] = identifier;
-            }
 
             return default;
         }

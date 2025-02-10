@@ -2237,6 +2237,15 @@
         <GrantType Value="refresh_token" />
       </Configuration>
     </Environment>
+
+    <Property Name="DeviceId" DictionaryKey=".device_id" />
+    <Property Name="DeviceName" DictionaryKey=".device_name" />
+
+    <Setting PropertyName="DeviceId" ParameterName="identifier" Type="String" Required="false"
+             Description="Gets or sets the optional device identifier that will be attached to authorization requests" />
+
+    <Setting PropertyName="DeviceName" ParameterName="name" Type="String" Required="false"
+             Description="Gets or sets the optional device name that will be attached to authorization requests" />
   </Provider>
 
   <!--
