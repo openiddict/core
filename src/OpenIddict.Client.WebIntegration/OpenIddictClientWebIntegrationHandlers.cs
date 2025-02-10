@@ -391,6 +391,25 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
+            // VK ID uses a non-standard "device_id" parameter in authorization responses.
+            else if (context.Registration.ProviderType is ProviderTypes.VkId)
+            {
+                var identifier = (string?) context.Request["device_id"];
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029("device_id"),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return default;
+                }
+
+                // Store the device identifier as an authentication property
+                // so it can be resolved later to make refresh token requests.
+                context.Properties[VkId.Properties.DeviceId] = identifier;
+            }
+
             // Zoho returns the region of the authenticated user as a non-standard "location" parameter
             // that must be used to compute the address of the token and userinfo endpoints.
             else if (context.Registration.ProviderType is ProviderTypes.Zoho)
@@ -407,7 +426,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 // Ensure the specified location corresponds to well-known region.
-                if (location.ToUpperInvariant() is not ( "AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
+                if (location.ToUpperInvariant() is not ("AU" or "CA" or "EU" or "IN" or "JP" or "SA" or "US"))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -638,6 +657,23 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 context.TokenRequest.UserCode = code;
+            }
+
+            // VK ID requires attaching a non-standard "device_id" parameter to all token requests.
+            //
+            // This parameter is either resolved from the authorization response (for the authorization
+            // code or hybrid grants) or manually provided by the application for other grant types.
+            else if (context.Registration.ProviderType is ProviderTypes.VkId)
+            {
+                context.TokenRequest["device_id"] = context.GrantType switch
+                {
+                    GrantTypes.AuthorizationCode or GrantTypes.Implicit => context.Request["device_id"],
+
+                    _ when context.Properties.TryGetValue(VkId.Properties.DeviceId, out string? identifier) &&
+                        !string.IsNullOrEmpty(identifier) => identifier,
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0467))
+                };
             }
 
             return default;
@@ -1363,6 +1399,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // Shopify returns the email address as a custom "associated_user/email" node in token responses:
                 ProviderTypes.Shopify => (string?) context.TokenResponse?["associated_user"]?["email"],
 
+                // Yandex returns the email address as a custom "default_email" node:
+                ProviderTypes.Yandex => (string?) context.UserInfoResponse?["default_email"],
+
                 _ => context.MergedPrincipal.GetClaim(ClaimTypes.Email)
             });
 
@@ -1375,8 +1414,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Trakt        or ProviderTypes.WordPress
                     => (string?) context.UserInfoResponse?["username"],
 
-                // Basecamp and Harvest don't return a username so one is created using the "first_name" and "last_name" nodes:
-                ProviderTypes.Basecamp or ProviderTypes.Harvest
+                // These providers don't return a username so one is created using the "first_name" and "last_name" nodes:
+                ProviderTypes.Basecamp or ProviderTypes.Harvest or ProviderTypes.VkId
                     when context.UserInfoResponse?.HasParameter("first_name") is true &&
                          context.UserInfoResponse?.HasParameter("last_name")  is true
                     => $"{(string?) context.UserInfoResponse?["first_name"]} {(string?) context.UserInfoResponse?["last_name"]}",
@@ -1423,7 +1462,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     => $"{(string?) context.UserInfoResponse?["firstName"]} {(string?) context.UserInfoResponse?["lastName"]}",
 
                 // These providers return the username as a custom "display_name" node:
-                ProviderTypes.Spotify or ProviderTypes.StackExchange or ProviderTypes.Zoom
+                ProviderTypes.Spotify or ProviderTypes.StackExchange or
+                ProviderTypes.Yandex  or ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["display_name"],
 
                 // Strava returns the username as a custom "athlete/username" node in token responses:
@@ -1451,7 +1491,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // These providers return the user identifier as a custom "user_id" node:
                 ProviderTypes.Amazon        or ProviderTypes.HubSpot or
-                ProviderTypes.StackExchange or ProviderTypes.Typeform
+                ProviderTypes.StackExchange or ProviderTypes.Typeform or
+                ProviderTypes.VkId
                     => (string?) context.UserInfoResponse?["user_id"],
 
                 // ArcGIS and Trakt don't return a user identifier and require using the username as the identifier:
@@ -1462,16 +1503,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                 // These providers return the user identifier as a custom "id" node:
-                ProviderTypes.Airtable    or ProviderTypes.Basecamp  or ProviderTypes.Box           or
-                ProviderTypes.Dailymotion or ProviderTypes.Deezer    or ProviderTypes.Discord       or
-                ProviderTypes.Disqus      or ProviderTypes.Facebook  or ProviderTypes.GitCode       or
-                ProviderTypes.Gitee       or ProviderTypes.GitHub    or ProviderTypes.Harvest       or 
-                ProviderTypes.Kook        or ProviderTypes.Kroger    or ProviderTypes.Lichess       or 
-                ProviderTypes.Mastodon    or ProviderTypes.Meetup    or ProviderTypes.Nextcloud     or
-                ProviderTypes.Patreon     or ProviderTypes.Pipedrive or ProviderTypes.Reddit        or 
-                ProviderTypes.Smartsheet  or ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or 
-                ProviderTypes.Todoist     or ProviderTypes.Twitter   or ProviderTypes.Weibo         or
-                ProviderTypes.Zoom 
+                ProviderTypes.Airtable    or ProviderTypes.Basecamp      or ProviderTypes.Box        or
+                ProviderTypes.Dailymotion or ProviderTypes.Deezer        or ProviderTypes.Discord    or
+                ProviderTypes.Disqus      or ProviderTypes.Facebook      or ProviderTypes.Gitee      or
+                ProviderTypes.GitHub      or ProviderTypes.Harvest       or ProviderTypes.Kook       or
+                ProviderTypes.Kroger      or ProviderTypes.Lichess       or ProviderTypes.Mastodon   or
+                ProviderTypes.Meetup      or ProviderTypes.Nextcloud     or ProviderTypes.Patreon    or
+                ProviderTypes.Pipedrive   or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
+                ProviderTypes.Spotify     or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
+                ProviderTypes.Twitter     or ProviderTypes.Weibo         or ProviderTypes.Yandex     or 
+                ProviderTypes.Zoom
                     => (string?) context.UserInfoResponse?["id"],
 
                 // Bitbucket returns the user identifier as a custom "uuid" node:
@@ -1920,6 +1961,27 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["language"] = settings.Language;
             }
 
+            // Yandex allows sending optional "device_id" and "device_name" parameters.
+            else if (context.Registration.ProviderType is ProviderTypes.Yandex)
+            {
+                var settings = context.Registration.GetYandexSettings();
+
+                if (!context.Properties.TryGetValue(Yandex.Properties.DeviceId, out string? identifier) ||
+                     string.IsNullOrEmpty(identifier))
+                {
+                    identifier = settings.DeviceId;
+                }
+
+                if (!context.Properties.TryGetValue(Yandex.Properties.DeviceName, out string? name) ||
+                     string.IsNullOrEmpty(name))
+                {
+                    name = settings.DeviceName;
+                }
+
+                context.Request["device_id"] = identifier;
+                context.Request["device_name"] = name;
+            }
+
             // By default, Zoho doesn't return a refresh token but
             // allows sending an "access_type" parameter to retrieve one.
             else if (context.Registration.ProviderType is ProviderTypes.Zoho)
@@ -2056,14 +2118,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.RevocationRequest.ClientSecret = context.RevocationRequest.ClientAssertion;
                 context.RevocationRequest.ClientAssertion = null;
                 context.RevocationRequest.ClientAssertionType = null;
-            }
-
-            // Weibo implements a non-standard client authentication method for its endpoints that
-            // requires sending the token as "access_token" instead of the standard "token" parameter.
-            else if (context.Registration.ProviderType is ProviderTypes.Weibo)
-            {
-                context.RevocationRequest.AccessToken = context.RevocationRequest.Token;
-                context.RevocationRequest.Token = null;
             }
 
             return default;

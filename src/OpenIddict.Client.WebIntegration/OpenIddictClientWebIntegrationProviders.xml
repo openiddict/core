@@ -2066,6 +2066,31 @@
   </Provider>
 
   <!--
+                                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                                   ██ ███ █ █▀▄████▄ ▄██ ▄▄▀██
+                                                   ███ █ ██ ▄▀██████ ███ ██ ██
+                                                   ███▄▀▄██ ██ ████▀ ▀██ ▀▀ ██
+                                                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="VkId" Id="9bf89c19-401b-4076-893e-a4136e719432" 
+            Documentation="https://id.vk.com/about/business/go/docs/en/vkid/latest/oauth-vk">
+    <Environment Issuer="https://id.vk.com/">
+      <Configuration AuthorizationEndpoint="https://id.vk.com/authorize"
+                     RevocationEndpoint="https://id.vk.com/oauth2/revoke"
+                     TokenEndpoint="https://id.vk.com/oauth2/auth"
+                     UserInfoEndpoint="https://id.vk.com/oauth2/user_info">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Property Name="DeviceId" DictionaryKey=".device_id" />
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 ██ ███ ██ ▄▄▄██ ▄▄▀██ ▄▄▄█▄▀█▀▄██
                                                 ██ █ █ ██ ▄▄▄██ ▄▄▀██ ▄▄▄███ ████
@@ -2193,6 +2218,35 @@
   <Provider Name="Yahoo" Id="874d78ec-3d79-4492-ab79-76a7dd7fa0b5"
             Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
+  </Provider>  
+
+  <!--
+                                           ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                           ██ ███ █ ▄▄▀██ ▀██ ██ ▄▄▀██ ▄▄▄██▄▀█▀▄██
+                                           ██▄▀▀▀▄█ ▀▀ ██ █ █ ██ ██ ██ ▄▄▄████ ████
+                                           ████ ███ ██ ██ ██▄ ██ ▀▀ ██ ▀▀▀██▀▄█▄▀██
+                                           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Yandex" Id="313298d4-d210-4541-a348-96ced013dab1" Documentation="https://yandex.ru/dev/id/doc/en/">
+    <Environment Issuer="https://oauth.yandex.ru/">
+      <Configuration AuthorizationEndpoint="https://oauth.yandex.ru/authorize"
+                     RevocationEndpoint="https://oauth.yandex.ru/revoke_token"
+                     TokenEndpoint="https://oauth.yandex.ru/token"
+                     UserInfoEndpoint="https://login.yandex.ru/info">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+    </Environment>
+
+    <Property Name="DeviceId"   DictionaryKey=".device_id" />
+    <Property Name="DeviceName" DictionaryKey=".device_name" />
+
+    <Setting PropertyName="DeviceId" ParameterName="identifier" Type="String" Required="false"
+             Description="Gets or sets the optional device identifier that will be attached to authorization requests" />
+
+    <Setting PropertyName="DeviceName" ParameterName="name" Type="String" Required="false"
+             Description="Gets or sets the optional device name that will be attached to authorization requests" />
   </Provider>
 
   <!--
