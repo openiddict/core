@@ -187,7 +187,7 @@ public static partial class OpenIddictServerHandlers
                         0 => null,
 
                         // Otherwise, map the token types to their JWT public or internal representation.
-                        _ => context.ValidTokenTypes.SelectMany<string, string>(type =>type switch
+                        _ => context.ValidTokenTypes.SelectMany<string, string>(type => type switch
                         {
                             // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
                             TokenTypeHints.AccessToken =>
@@ -214,6 +214,10 @@ public static partial class OpenIddictServerHandlers
 
                             // For user codes, only the short "oi_usrc+jwt" form is valid.
                             TokenTypeHints.UserCode => [JsonWebTokenTypes.Private.UserCode],
+
+                            // For user codes, only the short "oi_pshaurt+jwt" form is valid.
+                            TokenTypeHints.Private.RequestToken
+                                => [JsonWebTokenTypes.Private.RequestToken],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         })
@@ -542,6 +546,8 @@ public static partial class OpenIddictServerHandlers
                     JsonWebTokenTypes.Private.DeviceCode        => TokenTypeHints.DeviceCode,
                     JsonWebTokenTypes.Private.RefreshToken      => TokenTypeHints.RefreshToken,
                     JsonWebTokenTypes.Private.UserCode          => TokenTypeHints.UserCode,
+
+                    JsonWebTokenTypes.Private.RequestToken => TokenTypeHints.Private.RequestToken,
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                 });
@@ -1449,7 +1455,8 @@ public static partial class OpenIddictServerHandlers
                 // For authorization/device/user codes and refresh tokens,
                 // attach claims destinations to the JWT claims collection.
                 if (context.TokenType is TokenTypeHints.AuthorizationCode or TokenTypeHints.DeviceCode or
-                                         TokenTypeHints.RefreshToken      or TokenTypeHints.UserCode)
+                                         TokenTypeHints.RefreshToken      or TokenTypeHints.UserCode   or
+                                         TokenTypeHints.Private.RequestToken)
                 {
                     var destinations = principal.GetDestinations();
                     if (destinations.Count is not 0)
@@ -1477,6 +1484,8 @@ public static partial class OpenIddictServerHandlers
                         TokenTypeHints.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
                         TokenTypeHints.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
                         TokenTypeHints.UserCode          => JsonWebTokenTypes.Private.UserCode,
+
+                        TokenTypeHints.Private.RequestToken => JsonWebTokenTypes.Private.RequestToken,
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     }

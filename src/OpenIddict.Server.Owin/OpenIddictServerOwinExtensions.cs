@@ -41,9 +41,11 @@ public static class OpenIddictServerOwinExtensions
         builder.Services.TryAdd(OpenIddictServerOwinHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
+#pragma warning disable CS0618
         builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();
-        builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireEndSessionRequestCachingEnabled>();
+#pragma warning restore CS0618
+        builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireEndSessionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();

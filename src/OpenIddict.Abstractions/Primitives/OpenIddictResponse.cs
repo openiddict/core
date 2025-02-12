@@ -199,6 +199,15 @@ public class OpenIddictResponse : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "request_uri" parameter.
+    /// </summary>
+    public string? RequestUri
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.RequestUri);
+        set => SetParameter(OpenIddictConstants.Parameters.RequestUri, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "scope" parameter.
     /// </summary>
     public string? Scope

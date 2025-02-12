@@ -886,8 +886,27 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.SkipRequest();
+            switch (context.EndpointType)
+            {
+                // When authorization request caching is enabled and the request doesn't contain a
+                // request_uri yet, do not enable the pass-through mode to allow OpenIddict to trigger
+                // a sign-in operation that will generate and attach a request token to the parameters.
+                case OpenIddictServerEndpointType.Authorization when
+                    context.Options.EnableAuthorizationRequestCaching &&
+                    string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
+                    return default;
 
+                // When end session request caching is enabled and the request doesn't contain a
+                // request_uri yet, do not enable the pass-through mode to allow OpenIddict to trigger
+                // a sign-in operation that will generate and attach a request token to the parameters.
+                case OpenIddictServerEndpointType.EndSession when
+                    context.Options.EnableEndSessionRequestCaching &&
+                    string.IsNullOrEmpty(context.Transaction.Request?.RequestUri):
+                    return default;
+
+            }
+
+            context.SkipRequest();
             return default;
         }
     }
@@ -926,6 +945,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             response.StatusCode = (context.EndpointType, context.Transaction.Response.Error) switch
             {
+                // Note: for pushed authorization responses, the returned HTTP status code MUST be 201.
+                // See https://datatracker.ietf.org/doc/html/rfc9126#section-2.2 for more information.
+                (OpenIddictServerEndpointType.PushedAuthorization, null or { Length: 0 }) => 201,
+
                 // Note: the default code may be replaced by another handler (e.g when doing redirects).
                 (_, null or { Length: 0 }) => 200,
 

@@ -11,6 +11,7 @@ namespace OpenIddict.Server.Owin;
 /// </summary>
 public static class OpenIddictServerOwinConstants
 {
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public static class Cache
     {
         public const string AuthorizationRequest = "openiddict-authorization-request:";
@@ -28,6 +29,7 @@ public static class OpenIddictServerOwinConstants
         public const string WwwAuthenticate = "WWW-Authenticate";
     }
 
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public static class JsonWebTokenTypes
     {
         public static class Private
@@ -67,6 +69,7 @@ public static class OpenIddictServerOwinConstants
         public const string DeviceCode = "device_code";
         public const string IdentityToken = "id_token";
         public const string RefreshToken = "refresh_token";
+        public const string RequestToken = "request_token";
         public const string UserCode = "user_code";
     }
 }

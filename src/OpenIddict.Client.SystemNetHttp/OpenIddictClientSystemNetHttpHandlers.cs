@@ -47,6 +47,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
          */
         AttachNonDefaultRevocationEndpointClientAuthenticationMethod.Descriptor,
 
+        .. Authorization.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,

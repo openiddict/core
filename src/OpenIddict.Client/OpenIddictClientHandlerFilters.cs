@@ -372,6 +372,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no pushed authorization request is expected to be sent.
+    /// </summary>
+    public sealed class RequirePushedAuthorizationRequest : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.SendPushedAuthorizationRequest);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
     public sealed class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>

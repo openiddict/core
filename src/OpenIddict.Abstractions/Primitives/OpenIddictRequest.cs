@@ -375,6 +375,7 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "request_id" parameter.
     /// </summary>
+    [Obsolete("This property is obsolete and will be removed in a future version.")]
     public string? RequestId
     {
         get => (string?) GetParameter(OpenIddictConstants.Parameters.RequestId);

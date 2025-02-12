@@ -19,6 +19,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if authorization request caching was not enabled.
     /// </summary>
+    [Obsolete("This filter is obsolete and will be removed in a future version.")]
     public sealed class RequireAuthorizationRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
@@ -64,6 +65,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if end session request caching was not enabled.
     /// </summary>
+    [Obsolete("This filter is obsolete and will be removed in a future version.")]
     public sealed class RequireEndSessionRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;

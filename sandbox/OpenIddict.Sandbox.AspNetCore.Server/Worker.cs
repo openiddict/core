@@ -77,6 +77,7 @@ public class Worker : IHostedService
                         Permissions.Endpoints.DeviceAuthorization,
                         Permissions.Endpoints.Introspection,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Revocation,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
@@ -98,7 +99,8 @@ public class Worker : IHostedService
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }
@@ -128,6 +130,7 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -139,7 +142,8 @@ public class Worker : IHostedService
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }
@@ -189,6 +193,7 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -200,7 +205,8 @@ public class Worker : IHostedService
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }
@@ -230,6 +236,7 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -241,7 +248,8 @@ public class Worker : IHostedService
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }
@@ -271,6 +279,7 @@ public class Worker : IHostedService
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -282,7 +291,8 @@ public class Worker : IHostedService
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }

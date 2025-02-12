@@ -152,11 +152,11 @@ When implementing custom token deserialization, a 'oi_tkn_typ' claim containing 
 Make sure that 'ClaimsPrincipal.Identity' is not null.</value>
   </data>
   <data name="ID0012" xml:space="preserve">
-    <value>The specified principal contains an authenticated identity, which is not valid when the sign-in operation is triggered from the device authorization endpoint.
+    <value>The specified principal contains an authenticated identity, which is not valid when the sign-in operation is triggered from the device authorization or pushed authorization endpoints.
 Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'false'.</value>
   </data>
   <data name="ID0013" xml:space="preserve">
-    <value>The specified principal contains a subject claim, which is not valid when the sign-in operation is triggered from the device authorization endpoint.</value>
+    <value>The specified principal contains a subject claim, which is not valid when the sign-in operation is triggered from the device authorization or pushed authorization endpoints.</value>
   </data>
   <data name="ID0014" xml:space="preserve">
     <value>The specified principal doesn't contain a valid/authenticated identity.
@@ -218,8 +218,8 @@ Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleAu
 To apply authorization responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyAuthorizationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0031" xml:space="preserve">
-    <value>The device request was not correctly extracted.
-To extract device requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractDeviceAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+    <value>The device authorization request was not correctly extracted.
+To extract device authorization requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractDeviceAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0032" xml:space="preserve">
     <value>The client application details cannot be found in the database.</value>
@@ -416,7 +416,7 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateAuthorizationRequestContext&gt;' must be implemented to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).</value>
   </data>
   <data name="ID0090" xml:space="preserve">
-    <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceAuthorizationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
+    <value>No custom device authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceAuthorizationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate device authorization requests (e.g to ensure the client_id and client_secret are valid).</value>
   </data>
   <data name="ID0091" xml:space="preserve">
     <value>No custom introspection request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateIntrospectionRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate introspection requests (e.g to ensure the client_id and client_secret are valid).</value>
@@ -501,12 +501,15 @@ This may indicate that the event handler responsible for processing OpenID Conne
   <data name="ID0116" xml:space="preserve">
     <value>A distributed cache instance must be registered when enabling request caching.
 To register the default in-memory distributed cache implementation, reference the 'Microsoft.Extensions.Caching.Memory' package and call 'services.AddDistributedMemoryCache()' from 'ConfigureServices'.</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0117" xml:space="preserve">
     <value>The authorization request payload is malformed.</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0118" xml:space="preserve">
     <value>The end session request payload is malformed.</value>
+    <comment>This resource is no longer used and will be removed in a future version.</comment>
   </data>
   <data name="ID0119" xml:space="preserve">
     <value>The OpenIddict OWIN server handler cannot be used as an active authentication handler.
@@ -1707,8 +1710,49 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0459" xml:space="preserve">
     <value>A token must be specified when using revocation.</value>
   </data>
+  <data name="ID0460" xml:space="preserve">
+    <value>The authorization server requires using pushed authorization requests. Consider setting 'OpenIddictClientRegistration.DisablePushedAuthorizationRequests' to false to allow the OpenIddict client to use pushed authorization requests.</value>
+  </data>
+  <data name="ID0461" xml:space="preserve">
+    <value>An error occurred while preparing the device authorization request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0462" xml:space="preserve">
+    <value>An error occurred while sending the device authorization request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0463" xml:space="preserve">
+    <value>An error occurred while extracting the device authorization response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0464" xml:space="preserve">
+    <value>An error occurred while handling the device authorization response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0465" xml:space="preserve">
+    <value>Authorization request caching and end session request caching cannot be used when disabling token storage.</value>
+  </data>
+  <data name="ID0466" xml:space="preserve">
+    <value>No custom pushed authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidatePushedAuthorizationRequestContext&gt;' (or 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;') must be implemented to validate pushed authorization requests (e.g to ensure the client_id and client_secret are valid).</value>
+  </data>
   <data name="ID0467" xml:space="preserve">
     <value>The VK ID integration requires sending the device identifier to the token and revocation endpoints. For that, attach a ".device_id" authentication property containing the device identifier returned by the authorization endpoint.</value>
+  </data>
+  <data name="ID0468" xml:space="preserve">
+    <value>The pushed authorization request was not correctly extracted.
+To extract pushed authorization requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractPushedAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0469" xml:space="preserve">
+    <value>The pushed authorization response was not correctly applied.
+To apply pushed authorization responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyPushedAuthorizationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -2134,7 +2178,7 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
     <value>The client application is not allowed to use the specified identity token hint.</value>
   </data>
   <data name="ID2142" xml:space="preserve">
-    <value>The specified state token is not suitable for the requested operation.</value>
+    <value>The specified '{0}' parameter is not suitable for the requested operation.</value>
   </data>
   <data name="ID2143" xml:space="preserve">
     <value>An unsupported content encoding was returned by the remote server.</value>
@@ -2237,6 +2281,27 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   </data>
   <data name="ID2176" xml:space="preserve">
     <value>The introspection response indicates the token is no longer valid.</value>
+  </data>
+  <data name="ID2177" xml:space="preserve">
+    <value>The '{0}' parameter must be attached as a regular OAuth 2.0 parameter when using a request object or pushed authorization requests.</value>
+  </data>
+  <data name="ID2178" xml:space="preserve">
+    <value>The '{0}' parameter doesn't match the value specified in the request object or pushed authorization request.</value>
+  </data>
+  <data name="ID2179" xml:space="preserve">
+    <value>The pushed authorization request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2180" xml:space="preserve">
+    <value>The mandatory '{0}' parameter couldn't be found in the pushed authorization response.</value>
+  </data>
+  <data name="ID2181" xml:space="preserve">
+    <value>The '{0}' parameter returned in the pushed authorization response is not valid absolute URI.</value>
+  </data>
+  <data name="ID2182" xml:space="preserve">
+    <value>A '{0}' obtained from the pushed authorization request endpoint is required for this client application.</value>
+  </data>
+  <data name="ID2183" xml:space="preserve">
+    <value>This client application is not allowed to use the authorization endpoint.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2424,19 +2489,19 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The request URI matched a server endpoint: {Endpoint}.</value>
   </data>
   <data name="ID6054" xml:space="preserve">
-    <value>The device request was successfully extracted: {Request}.</value>
+    <value>The device authorization request was successfully extracted: {Request}.</value>
   </data>
   <data name="ID6055" xml:space="preserve">
-    <value>The device request was successfully validated.</value>
+    <value>The device authorization request was successfully validated.</value>
   </data>
   <data name="ID6057" xml:space="preserve">
-    <value>The device request was rejected because invalid scopes were specified: {Scopes}.</value>
+    <value>The device authorization request was rejected because invalid scopes were specified: {Scopes}.</value>
   </data>
   <data name="ID6062" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device authorization endpoint.</value>
+    <value>The device authorization request was rejected because the application '{ClientId}' was not allowed to use the device authorization endpoint.</value>
   </data>
   <data name="ID6063" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
+    <value>The device authorization request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
   </data>
   <data name="ID6064" xml:space="preserve">
     <value>The verification request was successfully extracted: {Request}.</value>
@@ -2562,13 +2627,13 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The revocation request was rejected because the received token was of an unsupported type.</value>
   </data>
   <data name="ID6118" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device authorization flow.</value>
+    <value>The device authorization request was rejected because the application '{ClientId}' was not allowed to use the device authorization flow.</value>
   </data>
   <data name="ID6119" xml:space="preserve">
     <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
   </data>
   <data name="ID6120" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
+    <value>The device authorization request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
   </data>
   <data name="ID6121" xml:space="preserve">
     <value>The revocation request was rejected because the refresh token was issued to a different client.</value>
@@ -2900,6 +2965,96 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6233" xml:space="preserve">
     <value>The authorization request was rejected because an unsupported prompt parameter was specified.</value>
+  </data>
+  <data name="ID6234" xml:space="preserve">
+    <value>The pushed authorization request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6235" xml:space="preserve">
+    <value>The pushed authorization request was successfully sent to {Uri}: {Request}.</value>
+  </data>
+  <data name="ID6236" xml:space="preserve">
+    <value>The pushed authorization response returned by {Uri} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6237" xml:space="preserve">
+    <value>The pushed authorization request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6238" xml:space="preserve">
+    <value>The pushed authorization request was successfully validated.</value>
+  </data>
+  <data name="ID6239" xml:space="preserve">
+    <value>The pushed authorization request was rejected because it contained an unsupported parameter: {Parameter}.</value>
+  </data>
+  <data name="ID6240" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID6241" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{Parameter}' parameter wasn't a valid absolute URI: {RedirectUri}.</value>
+  </data>
+  <data name="ID6242" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{Parameter}' contained a URI fragment: {RedirectUri}.</value>
+  </data>
+  <data name="ID6243" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{ResponseType}' response type is not supported.</value>
+  </data>
+  <data name="ID6244" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the 'response_type'/'response_mode' combination was invalid: {ResponseType} ; {ResponseMode}.</value>
+  </data>
+  <data name="ID6245" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{ResponseMode}' response mode is not supported.</value>
+  </data>
+  <data name="ID6246" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{Scope}' scope was missing.</value>
+  </data>
+  <data name="ID6247" xml:space="preserve">
+    <value>The pushed authorization request was rejected because an invalid prompt combination was specified.</value>
+  </data>
+  <data name="ID6248" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the specified code challenge method was not supported.</value>
+  </data>
+  <data name="ID6249" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the response type was not compatible with 'code_challenge'/'code_challenge_method'.</value>
+  </data>
+  <data name="ID6250" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the specified response type was not compatible with PKCE.</value>
+  </data>
+  <data name="ID6251" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the confidential application '{ClientId}' was not allowed to retrieve an access token from the authorization endpoint.</value>
+  </data>
+  <data name="ID6252" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the redirect_uri was invalid: '{RedirectUri}'.</value>
+  </data>
+  <data name="ID6253" xml:space="preserve">
+    <value>The authentication request was rejected because invalid scopes were specified: {Scopes}.</value>
+  </data>
+  <data name="ID6254" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the pushed authorization endpoint.</value>
+  </data>
+  <data name="ID6255" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the authorization code flow.</value>
+  </data>
+  <data name="ID6256" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the implicit flow.</value>
+  </data>
+  <data name="ID6257" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the hybrid flow.</value>
+  </data>
+  <data name="ID6258" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the '{Scope}' scope.</value>
+  </data>
+  <data name="ID6259" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{Parameter}' contained a forbidden parameter: {Name}.</value>
+  </data>
+  <data name="ID6260" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{ResponseType}' response type is not a valid combination.</value>
+  </data>
+  <data name="ID6261" xml:space="preserve">
+    <value>The pushed authorization request was rejected because an unsupported prompt parameter was specified.</value>
+  </data>
+  <data name="ID6262" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the application '{ClientId}' was not allowed to use the '{ResponseType}' response type.</value>
+  </data>
+  <data name="ID6263" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the identity token used as a hint was issued to a different client.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

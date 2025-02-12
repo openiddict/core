@@ -82,12 +82,14 @@ public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
     /// Enabling this option is recommended when using external authentication providers
     /// or when large GET or POST OpenID Connect authorization requests support is required.
     /// </summary>
+    [Obsolete("This property is obsolete and will be removed in a future version.")]
     public bool EnableAuthorizationRequestCaching { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether requests received by the end session endpoint should be cached.
     /// When enabled, authorization requests are automatically stored in the distributed cache.
     /// </summary>
+    [Obsolete("This property is obsolete and will be removed in a future version.")]
     public bool EnableEndSessionRequestCaching { get; set; }
 
     /// <summary>
@@ -103,6 +105,7 @@ public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
     /// <summary>
     /// Gets or sets the caching policy used by the authorization endpoint.
     /// </summary>
+    [Obsolete("This property is obsolete and will be removed in a future version.")]
     public DistributedCacheEntryOptions AuthorizationRequestCachingPolicy { get; set; } = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
@@ -112,6 +115,7 @@ public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
     /// <summary>
     /// Gets or sets the caching policy used by the end session endpoint.
     /// </summary>
+    [Obsolete("This property is obsolete and will be removed in a future version.")]
     public DistributedCacheEntryOptions EndSessionRequestCachingPolicy { get; set; } = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),

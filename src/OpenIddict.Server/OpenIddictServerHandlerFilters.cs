@@ -471,6 +471,23 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a pushed authorization request.
+    /// </summary>
+    public sealed class RequirePushedAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.PushedAuthorization);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
     /// </summary>
     public sealed class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -501,6 +518,57 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(context.Options.UseReferenceRefreshTokens);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no request token is generated.
+    /// </summary>
+    public sealed class RequireRequestTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateRequestToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no request token principal is available.
+    /// </summary>
+    public sealed class RequireRequestTokenPrincipal : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.RequestTokenPrincipal is not null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no request token is validated.
+    /// </summary>
+    public sealed class RequireRequestTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateRequestToken);
         }
     }
 

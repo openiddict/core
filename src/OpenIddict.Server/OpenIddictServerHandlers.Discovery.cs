@@ -43,6 +43,7 @@ public static partial class OpenIddictServerHandlers
             AttachSubjectTypes.Descriptor,
             AttachPromptValues.Descriptor,
             AttachSigningAlgorithms.Descriptor,
+            AttachSecurityRequirements.Descriptor,
             AttachAdditionalMetadata.Descriptor,
 
             /*
@@ -242,6 +243,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.RevocationEndpoint] = notification.RevocationEndpoint?.AbsoluteUri,
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
+                    [Metadata.PushedAuthorizationRequestEndpoint] = notification.PushedAuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.JwksUri] = notification.JsonWebKeySetEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToArray(),
                     [Metadata.ResponseTypesSupported] = notification.ResponseTypes.ToArray(),
@@ -255,7 +257,9 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.TokenEndpointAuthMethodsSupported] = notification.TokenEndpointAuthenticationMethods.ToArray(),
                     [Metadata.IntrospectionEndpointAuthMethodsSupported] = notification.IntrospectionEndpointAuthenticationMethods.ToArray(),
                     [Metadata.RevocationEndpointAuthMethodsSupported] = notification.RevocationEndpointAuthenticationMethods.ToArray(),
-                    [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceAuthorizationEndpointAuthenticationMethods.ToArray()
+                    [Metadata.DeviceAuthorizationEndpointAuthMethodsSupported] = notification.DeviceAuthorizationEndpointAuthenticationMethods.ToArray(),
+                    [Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported] = notification.PushedAuthorizationEndpointAuthenticationMethods.ToArray(),
+                    [Metadata.RequirePushedAuthorizationRequests] = notification.RequirePushedAuthorizationRequests
                 };
 
                 foreach (var metadata in notification.Metadata)
@@ -373,17 +377,20 @@ public static partial class OpenIddictServerHandlers
                 context.AuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                context.JsonWebKeySetEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.JsonWebKeySetEndpointUris.FirstOrDefault());
-
                 context.DeviceAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.DeviceAuthorizationEndpointUris.FirstOrDefault());
+
+                context.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.EndSessionEndpointUris.FirstOrDefault());
 
                 context.IntrospectionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                context.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                    context.BaseUri, context.Options.EndSessionEndpointUris.FirstOrDefault());
+                context.JsonWebKeySetEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.JsonWebKeySetEndpointUris.FirstOrDefault());
+
+                context.PushedAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.PushedAuthorizationEndpointUris.FirstOrDefault());
 
                 context.RevocationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.RevocationEndpointUris.FirstOrDefault());
@@ -538,6 +545,13 @@ public static partial class OpenIddictServerHandlers
                 if (context.IntrospectionEndpoint is not null)
                 {
                     context.IntrospectionEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
+                }
+
+                // Note: "pushed_authorization_request_endpoint_auth_methods_supported" is not a standard parameter
+                // but is supported by OpenIddict 6.1.0 and higher for consistency with the other endpoints.
+                if (context.PushedAuthorizationEndpoint is not null)
+                {
+                    context.PushedAuthorizationEndpointAuthenticationMethods.UnionWith(context.Options.ClientAuthenticationMethods);
                 }
 
                 if (context.RevocationEndpoint is not null)
@@ -771,6 +785,35 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for attaching the security requirements to the provider discovery document.
+        /// </summary>
+        public sealed class AttachSecurityRequirements : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
+                    .UseSingletonHandler<AttachSecurityRequirements>()
+                    .SetOrder(AttachSigningAlgorithms.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.RequirePushedAuthorizationRequests = context.Options.RequirePushedAuthorizationRequests;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for attaching additional metadata to the provider discovery document.
         /// </summary>
         public sealed class AttachAdditionalMetadata : IOpenIddictServerHandler<HandleConfigurationRequestContext>
@@ -781,7 +824,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                     .UseSingletonHandler<AttachAdditionalMetadata>()
-                    .SetOrder(AttachSigningAlgorithms.Descriptor.Order + 1_000)
+                    .SetOrder(AttachSecurityRequirements.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 

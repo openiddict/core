@@ -95,6 +95,11 @@ public sealed class OpenIddictServerOptions
     ];
 
     /// <summary>
+    /// Gets the absolute and relative URIs associated to the pushed authorization endpoint.
+    /// </summary>
+    public List<Uri> PushedAuthorizationEndpointUris { get; } = [];
+
+    /// <summary>
     /// Gets the absolute and relative URIs associated to the revocation endpoint.
     /// </summary>
     public List<Uri> RevocationEndpointUris { get; } = [];
@@ -204,6 +209,13 @@ public sealed class OpenIddictServerOptions
     /// While not recommended, this property can be set to <see langword="null"/> to issue identity tokens that never expire.
     /// </summary>
     public TimeSpan? IdentityTokenLifetime { get; set; } = TimeSpan.FromMinutes(20);
+
+    /// <summary>
+    /// Gets or sets the period of time request tokens remain valid after being issued. The default value is 1 hour.
+    /// The client application is expected to start a whole new authentication flow after the request token has expired.
+    /// While not recommended, this property can be set to <see langword="null"/> to issue request tokens that never expire.
+    /// </summary>
+    public TimeSpan? RequestTokenLifetime { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>
     /// Gets or sets the period of time refresh tokens remain valid after being issued. The default value is 14 days.
@@ -339,6 +351,20 @@ public sealed class OpenIddictServerOptions
     public bool DisableScopeValidation { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether requests received by the authorization
+    /// endpoint should be stored in the token store, which allows flowing
+    /// large payloads across requests. Enabling this option can be useful
+    /// for clients that do not supported pushed authorization requests.
+    /// </summary>
+    public bool EnableAuthorizationRequestCaching { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether requests received
+    /// by the end session endpoint should be stored in the token store.
+    /// </summary>
+    public bool EnableEndSessionRequestCaching { get; set; }
+
+    /// <summary>
     /// Gets the OAuth 2.0 client assertion types enabled for this application.
     /// </summary>
     public HashSet<string> ClientAssertionTypes { get; } = new(StringComparer.Ordinal)
@@ -395,6 +421,14 @@ public sealed class OpenIddictServerOptions
     /// lack the code_challenge will be automatically rejected by OpenIddict.
     /// </summary>
     public bool RequireProofKeyForCodeExchange { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether pushed authorization requests must be used
+    /// by client applications when using an interactive flow like the authorization code or
+    /// implicit flows. If this property is set to <see langword="true"/>, authorization requests
+    /// that don't contain a request_uri parameter will be automatically rejected by OpenIddict.
+    /// </summary>
+    public bool RequirePushedAuthorizationRequests { get; set; }
 
     /// <summary>
     /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.

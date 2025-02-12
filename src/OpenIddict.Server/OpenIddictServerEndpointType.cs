@@ -64,5 +64,10 @@ public enum OpenIddictServerEndpointType
     /// <summary>
     /// User verification endpoint.
     /// </summary>
-    EndUserVerification = 10
+    EndUserVerification = 10,
+
+    /// <summary>
+    /// Pushed authorization endpoint.
+    /// </summary>
+    PushedAuthorization = 11
 }

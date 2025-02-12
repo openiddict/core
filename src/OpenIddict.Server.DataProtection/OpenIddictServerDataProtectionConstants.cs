@@ -27,6 +27,7 @@ public static class OpenIddictServerDataProtectionConstants
         public const string OriginalRedirectUri = ".original_redirect_uri";
         public const string Presenters = ".presenters";
         public const string RefreshTokenLifetime = ".refresh_token_lifetime";
+        public const string RequestTokenLifetime = ".request_token_lifetime";
         public const string Resources = ".resources";
         public const string Scopes = ".scopes";
         public const string UserCodeLifetime = ".user_code_lifetime";
@@ -44,6 +45,7 @@ public static class OpenIddictServerDataProtectionConstants
             public const string AccessToken = "AccessTokenFormat";
             public const string AuthorizationCode = "AuthorizationCodeFormat";
             public const string DeviceCode = "DeviceCodeFormat";
+            public const string RequestToken = "RequestTokenFormat";
             public const string RefreshToken = "RefreshTokenFormat";
             public const string UserCode = "UserCodeFormat";
         }

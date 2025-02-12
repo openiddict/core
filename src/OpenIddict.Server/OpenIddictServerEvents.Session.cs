@@ -67,13 +67,19 @@ public static partial class OpenIddictServerEvents
         /// Gets the post_logout_redirect_uri specified by the client application.
         /// </summary>
         [StringSyntax(StringSyntaxAttribute.Uri)]
-        public string? PostLogoutRedirectUri { get; private set; }
+        public string? PostLogoutRedirectUri { get; internal set; }
 
         /// <summary>
         /// Gets or sets the security principal extracted
         /// from the identity token hint, if applicable.
         /// </summary>
         public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the
+        /// request token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestTokenPrincipal { get; set; }
 
         /// <summary>
         /// Populates the <see cref="PostLogoutRedirectUri"/> property with the specified redirect_uri.

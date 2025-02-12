@@ -48,6 +48,11 @@ public class AuthorizationController : Controller
     [HttpGet, Route("~/connect/authorize")]
     public async Task<ActionResult> Authorize()
     {
+        // Note: the request object contains all the parameters specified in the query string or request form
+        // or initially sent to the pushed authorization endpoint for a PAR-enabled authorization flow.
+        // As such, the data contained in this object MUST NOT be serialized or returned unprotected to the
+        // user agent (e.g as HTML hidden input fields). If only the query string or request form parameters
+        // need to be resolved, the Request.QueryString and Request.Form collections must be used instead.
         var context = HttpContext.GetOwinContext();
         var request = context.GetOpenIddictServerRequest() ??
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
@@ -213,6 +218,11 @@ public class AuthorizationController : Controller
     [HttpPost, Route("~/connect/authorize"), ValidateAntiForgeryToken]
     public async Task<ActionResult> Accept()
     {
+        // Note: the request object contains all the parameters specified in the query string or request form
+        // (or initially sent to the pushed authorization endpoint for a PAR-enabled authorization flow).
+        // As such, the data contained in this object MUST NOT be serialized or returned unprotected to the
+        // user agent (e.g as HTML hidden input fields). If only the query string or request form parameters
+        // need to be resolved, the Request.QueryString and Request.Form collections must be used instead.
         var context = HttpContext.GetOwinContext();
         var request = context.GetOpenIddictServerRequest() ??
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");

@@ -226,6 +226,16 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         }
 
         /// <summary>
+        /// Disables pushed authorization requests for this client registration. When pushed authorization
+        /// requests are disabled, PAR is not used by the OpenIddict client, even if the remote authorization
+        /// server exposes a pushed authorization endpoint. If the authorization server requires using PAR,
+        /// an exception is automatically thrown when starting an interactive authentication challenge.
+        /// </summary>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} DisablePushedAuthorizationRequests()
+            => Set(registration => registration.DisablePushedAuthorizationRequests = true);
+
+        /// <summary>
         /// Sets the issuer that will be attached to the <see cref=""Claim""/>
         /// instances created by the OpenIddict client stack for this provider.
         /// </summary>

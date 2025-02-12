@@ -806,7 +806,8 @@ public class OpenIddictClientService
                 Issuer = request.Issuer,
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 ProviderName = request.ProviderName,
-                RegistrationId = request.RegistrationId
+                RegistrationId = request.RegistrationId,
+                Request = new()
             };
 
             if (request.Scopes is { Count: > 0 })
@@ -1945,6 +1946,182 @@ public class OpenIddictClientService
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 return (context.Response, context.Principal);
+            }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sends the pushed authorization request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The pushed authorization request.</param>
+    /// <param name="uri">The uri of the remote pushed authorization endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The token response.</returns>
+    internal async ValueTask<OpenIddictResponse> SendPushedAuthorizationRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictRequest request, Uri uri, string? method, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            request = await PreparePushedAuthorizationRequestAsync();
+            request = await ApplyPushedAuthorizationRequestAsync();
+
+            var response = await ExtractPushedAuthorizationResponseAsync();
+
+            return await HandlePushedAuthorizationResponseAsync();
+
+            async ValueTask<OpenIddictRequest> PreparePushedAuthorizationRequestAsync()
+            {
+                var context = new PreparePushedAuthorizationRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    ClientAuthenticationMethod = method,
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0461(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictRequest> ApplyPushedAuthorizationRequestAsync()
+            {
+                var context = new ApplyPushedAuthorizationRequestContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0462(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictResponse> ExtractPushedAuthorizationResponseAsync()
+            {
+                var context = new ExtractPushedAuthorizationResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0463(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
+
+                return context.Response;
+            }
+
+            async ValueTask<OpenIddictResponse> HandlePushedAuthorizationResponseAsync()
+            {
+                var context = new HandlePushedAuthorizationResponseContext(transaction)
+                {
+                    CancellationToken = cancellationToken,
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request,
+                    Response = response
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0464(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Response;
             }
         }
 

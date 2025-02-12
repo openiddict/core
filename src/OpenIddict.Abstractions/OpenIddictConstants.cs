@@ -145,6 +145,9 @@ public static class OpenIddictConstants
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";
             public const string RegistrationId = "oi_reg_id";
+            public const string RequestParameters = "oi_req_prms";
+            public const string RequestTokenLifetime = "oi_reqt_lft";
+            public const string RequestTokenType = "oi_reqt_typ";
             public const string Resource = "oi_rsrc";
             public const string ResponseType = "oi_rsp_typ";
             public const string SigningAlgorithm = "oi_sign_alg";
@@ -264,6 +267,7 @@ public static class OpenIddictConstants
             public const string AuthorizationCode = "oi_auc+jwt";
             public const string DeviceCode = "oi_dvc+jwt";
             public const string RefreshToken = "oi_reft+jwt";
+            public const string RequestToken = "oi_reqt+jwt";
             public const string StateToken = "oi_stet+jwt";
             public const string UserCode = "oi_usrc+jwt";
         }
@@ -296,11 +300,14 @@ public static class OpenIddictConstants
         public const string OpPolicyUri = "op_policy_uri";
         public const string OpTosUri = "op_tos_uri";
         public const string PromptValuesSupported = "prompt_values_supported";
+        public const string PushedAuthorizationRequestEndpoint = "pushed_authorization_request_endpoint";
+        public const string PushedAuthorizationRequestEndpointAuthMethodsSupported = "pushed_authorization_request_endpoint_auth_methods_supported";
         public const string RequestObjectEncryptionAlgValuesSupported = "request_object_encryption_alg_values_supported";
         public const string RequestObjectEncryptionEncValuesSupported = "request_object_encryption_enc_values_supported";
         public const string RequestObjectSigningAlgValuesSupported = "request_object_signing_alg_values_supported";
         public const string RequestParameterSupported = "request_parameter_supported";
         public const string RequestUriParameterSupported = "request_uri_parameter_supported";
+        public const string RequirePushedAuthorizationRequests = "require_pushed_authorization_requests";
         public const string RequireRequestUriRegistration = "require_request_uri_registration";
         public const string ResponseModesSupported = "response_modes_supported";
         public const string ResponseTypesSupported = "response_types_supported";
@@ -362,6 +369,7 @@ public static class OpenIddictConstants
         public const string RefreshToken = "refresh_token";
         public const string Registration = "registration";
         public const string Request = "request";
+        [Obsolete("This property is obsolete and will be removed in a future version.")]
         public const string RequestId = "request_id";
         public const string RequestUri = "request_uri";
         public const string Resource = "resource";
@@ -387,6 +395,7 @@ public static class OpenIddictConstants
             public const string DeviceAuthorization = "ept:device_authorization";
             public const string EndSession = "ept:end_session";
             public const string Introspection = "ept:introspection";
+            public const string PushedAuthorization = "ept:pushed_authorization";
             public const string Revocation = "ept:revocation";
             public const string Token = "ept:token";
         }
@@ -445,11 +454,30 @@ public static class OpenIddictConstants
         public const string Destinations = ".destinations";
     }
 
+    public static class RequestTokenTypes
+    {
+        public static class Private
+        {
+            public const string CachedAuthorizationRequest = "cached_authorization_request";
+            public const string CachedEndSessionRequest = "cached_end_session_request";
+            public const string PushedAuthorizationRequest = "pushed_authorization_request";
+        }
+    }
+
+    public static class RequestUris
+    {
+        public static class Prefixes
+        {
+            public const string Generic = "urn:ietf:params:oauth:request_uri:";
+        }
+    }
+
     public static class Requirements
     {
         public static class Features
         {
             public const string ProofKeyForCodeExchange = "ft:pkce";
+            public const string PushedAuthorizationRequests = "ft:par";
         }
 
         public static class Prefixes
@@ -518,6 +546,7 @@ public static class OpenIddictConstants
             public const string DeviceCode = "tkn_lft:dvc";
             public const string IdentityToken = "tkn_lft:idt";
             public const string RefreshToken = "tkn_lft:reft";
+            public const string RequestToken = "tkn_lft:reqt";
             public const string UserCode = "tkn_lft:usrc";
         }
     }
@@ -566,6 +595,11 @@ public static class OpenIddictConstants
         public const string StateToken = "state_token";
         public const string UserInfoToken = "userinfo_token";
         public const string UserCode = "user_code";
+
+        public static class Private
+        {
+            public const string RequestToken = "request_token";
+        }
     }
 
     public static class TokenTypes

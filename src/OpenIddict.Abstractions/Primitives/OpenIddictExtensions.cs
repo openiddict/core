@@ -2559,6 +2559,22 @@ public static class OpenIddictExtensions
         => GetLifetime(principal, Claims.Private.IdentityTokenLifetime);
 
     /// <summary>
+    /// Gets the request token lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <returns>The request token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetRequestTokenLifetime(this ClaimsIdentity identity)
+        => GetLifetime(identity, Claims.Private.RequestTokenLifetime);
+
+    /// <summary>
+    /// Gets the request token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <returns>The request token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetRequestTokenLifetime(this ClaimsPrincipal principal)
+        => GetLifetime(principal, Claims.Private.RequestTokenLifetime);
+
+    /// <summary>
     /// Gets the refresh token lifetime associated with the claims identity.
     /// </summary>
     /// <param name="identity">The claims identity.</param>

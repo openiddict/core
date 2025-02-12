@@ -7,7 +7,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -47,6 +46,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         if (options.EnableDegradedMode)
         {
             options.DisableAuthorizationStorage = options.DisableTokenStorage = options.DisableRollingRefreshTokens = true;
+            options.EnableAuthorizationRequestCaching = options.EnableEndSessionRequestCaching = false;
             options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = true;
             options.IgnoreResponseTypePermissions = options.IgnoreScopePermissions = true;
             options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
@@ -75,6 +75,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             .Concat(options.DeviceAuthorizationEndpointUris.Distinct())
             .Concat(options.IntrospectionEndpointUris.Distinct())
             .Concat(options.EndSessionEndpointUris.Distinct())
+            .Concat(options.PushedAuthorizationEndpointUris.Distinct())
             .Concat(options.RevocationEndpointUris.Distinct())
             .Concat(options.TokenEndpointUris.Distinct())
             .Concat(options.UserInfoEndpointUris.Distinct())
@@ -145,10 +146,11 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         // Ensure at least one client authentication method is enabled (unless no non-interactive endpoint was enabled).
-        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceAuthorizationEndpointUris.Count        is not 0 ||
-                                                               options.IntrospectionEndpointUris.Count is not 0 ||
-                                                               options.RevocationEndpointUris.Count    is not 0 ||
-                                                               options.TokenEndpointUris.Count         is not 0))
+        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceAuthorizationEndpointUris.Count is not 0 ||
+                                                               options.IntrospectionEndpointUris.Count       is not 0 ||
+                                                               options.PushedAuthorizationEndpointUris.Count is not 0 ||
+                                                               options.RevocationEndpointUris.Count          is not 0 ||
+                                                               options.TokenEndpointUris.Count               is not 0))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0419));
         }
@@ -178,6 +180,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
+        }
+
+        // Ensure authorization or end session request caching was not enabled when token storage is disabled.
+        if (options.DisableTokenStorage && (options.EnableAuthorizationRequestCaching || options.EnableEndSessionRequestCaching))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0465));
         }
 
         // Prevent the device authorization flow from being used if token storage is disabled, unless the degraded
@@ -256,6 +264,15 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
+            }
+
+            if (options.PushedAuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                (descriptor.ContextType == typeof(ValidatePushedAuthorizationRequestContext) ||
+                 descriptor.ContextType == typeof(ProcessAuthenticationContext)) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0467));
             }
 
             if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>

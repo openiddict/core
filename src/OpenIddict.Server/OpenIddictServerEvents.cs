@@ -382,6 +382,15 @@ public static partial class OpenIddictServerEvents
         public bool ExtractRefreshToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a request token
+        /// should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractRequestToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a user
         /// code should be extracted from the current context.
         /// </summary>
@@ -452,6 +461,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RequireRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a request token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireRequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a user code
@@ -526,6 +544,15 @@ public static partial class OpenIddictServerEvents
         public bool ValidateRefreshToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the request token
+        /// extracted from the current request should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateRequestToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the user
         /// code extracted from the current request should be validated.
         /// </summary>
@@ -596,6 +623,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid request token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectRequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid user code
@@ -685,6 +721,16 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the refresh token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request token to validate, if applicable.
+        /// </summary>
+        public string? RequestToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the request token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the user code to validate, if applicable.
@@ -826,6 +872,15 @@ public static partial class OpenIddictServerEvents
         public bool GenerateRefreshToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a request token
+        /// should be generated (and optionally returned to the client).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateRequestToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a user code
         /// should be generated (and optionally returned to the client).
         /// </summary>
@@ -878,6 +933,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool IncludeRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated request token
+        /// should be returned to the client application as part of the response.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeRequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated user code
@@ -952,6 +1016,19 @@ public static partial class OpenIddictServerEvents
         /// will be used to create the refresh token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated request token, if applicable.
+        /// The request token will only be returned if
+        /// <see cref="IncludeRequestToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? RequestToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be used
+        /// to create the request token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the generated user code, if applicable.
