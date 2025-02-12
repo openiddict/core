@@ -605,8 +605,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                     var count = await
                         (from authorization in Authorizations
                          where authorization.CreationDate < date
-                         where authorization.Status != Statuses.Valid ||
-                              (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                         where authorization.Status != Statuses.Valid || authorization.Type == AuthorizationTypes.AdHoc
+                         where !authorization.Tokens.Any()
                          orderby authorization.Id
                          select authorization).Take(1_000).ExecuteDeleteAsync(cancellationToken);
 
@@ -643,8 +643,8 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
                     var authorizations = await
                         (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
                          where authorization.CreationDate < date
-                         where authorization.Status != Statuses.Valid ||
-                              (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                         where authorization.Status != Statuses.Valid || authorization.Type == AuthorizationTypes.AdHoc
+                         where !authorization.Tokens.Any()
                          orderby authorization.Id
                          select authorization).Take(1_000).ToListAsync(cancellationToken);
 

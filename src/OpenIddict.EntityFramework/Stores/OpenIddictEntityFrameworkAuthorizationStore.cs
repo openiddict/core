@@ -521,8 +521,8 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             var authorizations =
                 await (from authorization in Authorizations.Include(authorization => authorization.Tokens)
                        where authorization.CreationDate < date
-                       where authorization.Status != Statuses.Valid ||
-                            (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                       where authorization.Status != Statuses.Valid || authorization.Type == AuthorizationTypes.AdHoc
+                       where !authorization.Tokens.Any()
                        orderby authorization.Id
                        select authorization).Take(1_000).ToListAsync(cancellationToken);
 
