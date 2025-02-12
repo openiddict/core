@@ -59,10 +59,8 @@ public sealed class OpenIddictQuartzJob : IJob
 
         try
         {
-            // Note: this background task is responsible for automatically removing orphaned tokens/authorizations
-            // (i.e tokens that are no longer valid and ad-hoc authorizations that have no valid tokens associated).
-            // Import: since tokens associated to ad-hoc authorizations are not removed as part of the same operation,
-            // the tokens MUST be deleted before removing the ad-hoc authorizations that no longer have any token.
+            // Important: since authorizations that still have tokens attached are never
+            // pruned, the tokens MUST be deleted before deleting the authorizations.
 
             if (!_options.CurrentValue.DisableTokenPruning)
             {

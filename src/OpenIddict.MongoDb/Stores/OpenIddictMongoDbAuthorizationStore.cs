@@ -422,8 +422,8 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
                    join token in database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
                               on authorization.Id equals token.AuthorizationId into tokens
                    where authorization.CreationDate < threshold.UtcDateTime
-                   where authorization.Status != Statuses.Valid ||
-                        (authorization.Type == AuthorizationTypes.AdHoc && !tokens.Any())
+                   where authorization.Status != Statuses.Valid || authorization.Type == AuthorizationTypes.AdHoc
+                   where !tokens.Any()
                    select authorization.Id).ToListAsync(cancellationToken);
 
         // Note: to avoid generating delete requests with very large filters, a buffer is used here and the

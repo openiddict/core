@@ -232,12 +232,11 @@ public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorizat
         TState state, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no token attached.
+    /// Removes the authorizations that are marked as invalid and don't have any token attached.
     /// Only authorizations created before the specified <paramref name="threshold"/> are removed.
     /// </summary>
     /// <remarks>
-    /// To ensure ad-hoc authorizations that no longer have any valid/non-expired token
-    /// attached are correctly removed, the tokens should always be pruned first.
+    /// Since authorizations with tokens still attached are not deleted, tokens should always be pruned first.
     /// </remarks>
     /// <param name="threshold">The date before which authorizations are not pruned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
