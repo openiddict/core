@@ -1053,6 +1053,17 @@ public static partial class OpenIddictClientEvents
         public string? DeviceAuthorizationEndpointClientAuthenticationMethod { get; set; }
 
         /// <summary>
+        /// Gets or sets the URI of the pushed authorization endpoint, if applicable.
+        /// </summary>
+        public Uri? PushedAuthorizationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used when communicating
+        /// with the pushed authorization endpoint, if applicable.
+        /// </summary>
+        public string? PushedAuthorizationEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a state token
         /// should be generated (and optionally included in the request).
         /// </summary>
@@ -1081,6 +1092,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets a boolean indicating whether a device authorization request should be sent.
         /// </summary>
         public bool SendDeviceAuthorizationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a pushed authorization request should be sent.
+        /// </summary>
+        public bool SendPushedAuthorizationRequest { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a client assertion
@@ -1137,6 +1153,16 @@ public static partial class OpenIddictClientEvents
         public OpenIddictResponse? DeviceAuthorizationResponse { get; set; }
 
         /// <summary>
+        /// Gets or sets the request sent to the pushed authorization endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? PushedAuthorizationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the pushed authorization endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? PushedAuthorizationResponse { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a device
         /// code should be extracted from the current context.
         /// </summary>
@@ -1144,6 +1170,15 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool ExtractDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a request token
+        /// should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractRequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a user
@@ -1164,6 +1199,15 @@ public static partial class OpenIddictClientEvents
         public bool RequireDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a request token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireRequestToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a user code must
         /// be resolved for the authentication to be considered valid.
         /// </summary>
@@ -1180,6 +1224,15 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool ValidateDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the request token
+        /// extracted from the current context should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateRequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the user code
@@ -1200,6 +1253,15 @@ public static partial class OpenIddictClientEvents
         public bool RejectDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid request token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectRequestToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an invalid user code will
         /// cause the authentication demand to be rejected or will be ignored.
         /// </summary>
@@ -1212,6 +1274,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the device code to validate, if applicable.
         /// </summary>
         public string? DeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request token to validate, if applicable.
+        /// </summary>
+        public string? RequestToken { get; set; }
 
         /// <summary>
         /// Gets or sets the user code to validate, if applicable.

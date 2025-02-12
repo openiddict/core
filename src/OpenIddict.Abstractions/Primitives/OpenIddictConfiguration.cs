@@ -87,6 +87,11 @@ public sealed class OpenIddictConfiguration
     public Uri? MtlsIntrospectionEndpoint { get; set; }
 
     /// <summary>
+    /// Gets or sets the URI of the mTLS-enabled pushed authorization endpoint.
+    /// </summary>
+    public Uri? MtlsPushedAuthorizationEndpoint { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the mTLS-enabled revocation endpoint.
     /// </summary>
     public Uri? MtlsRevocationEndpoint { get; set; }
@@ -105,6 +110,21 @@ public sealed class OpenIddictConfiguration
     /// Gets the additional properties.
     /// </summary>
     public Dictionary<string, object?> Properties { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets the URI of the pushed authorization endpoint.
+    /// </summary>
+    public Uri? PushedAuthorizationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets the client authentication methods supported by the pushed authorization endpoint.
+    /// </summary>
+    public HashSet<string> PushedAuthorizationEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether pushed authorization requests are required.
+    /// </summary>
+    public bool? RequirePushedAuthorizationRequests { get; set; }
 
     /// <summary>
     /// Gets the response mode supported by the server.

@@ -79,6 +79,119 @@ public static partial class OpenIddictClientEvents
     }
 
     /// <summary>
+    /// Represents an event called for each request to the pushed authorization endpoint request
+    /// to give the user code a chance to add parameters to the pushed authorization request.
+    /// </summary>
+    public sealed class PreparePushedAuthorizationRequestContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="PreparePushedAuthorizationRequestContext"/> class.
+        /// </summary>
+        public PreparePushedAuthorizationRequestContext(OpenIddictClientTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+    }
+
+    /// <summary>
+    /// Represents an event called for each request to the pushed authorization endpoint request
+    /// to send the pushed authorization request to the remote authorization server.
+    /// </summary>
+    public sealed class ApplyPushedAuthorizationRequestContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApplyPushedAuthorizationRequestContext"/> class.
+        /// </summary>
+        public ApplyPushedAuthorizationRequestContext(OpenIddictClientTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+    }
+
+    /// <summary>
+    /// Represents an event called for each pushed authorization response
+    /// to extract the response parameters from the server response.
+    /// </summary>
+    public sealed class ExtractPushedAuthorizationResponseContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExtractPushedAuthorizationResponseContext"/> class.
+        /// </summary>
+        public ExtractPushedAuthorizationResponseContext(OpenIddictClientTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the response, or <see langword="null"/> if it wasn't extracted yet.
+        /// </summary>
+        public OpenIddictResponse? Response
+        {
+            get => Transaction.Response;
+            set => Transaction.Response = value;
+        }
+    }
+
+    /// <summary>
+    /// Represents an event called for each pushed authorization response.
+    /// </summary>
+    public sealed class HandlePushedAuthorizationResponseContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="HandlePushedAuthorizationResponseContext"/> class.
+        /// </summary>
+        public HandlePushedAuthorizationResponseContext(OpenIddictClientTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        public OpenIddictResponse Response
+        {
+            get => Transaction.Response!;
+            set => Transaction.Response = value;
+        }
+    }
+
+    /// <summary>
     /// Represents an event called for each request to the redirection endpoint to give the user code
     /// a chance to manually extract the redirection request from the ambient HTTP context.
     /// </summary>

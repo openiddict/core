@@ -37,6 +37,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
             .SetClaim(Claims.Private.DeviceCodeLifetime,        GetIntegerProperty(properties, Properties.DeviceCodeLifetime))
             .SetClaim(Claims.Private.IdentityTokenLifetime,     GetIntegerProperty(properties, Properties.IdentityTokenLifetime))
             .SetClaim(Claims.Private.RefreshTokenLifetime,      GetIntegerProperty(properties, Properties.RefreshTokenLifetime))
+            .SetClaim(Claims.Private.RequestTokenLifetime,      GetIntegerProperty(properties, Properties.RequestTokenLifetime))
             .SetClaim(Claims.Private.UserCodeLifetime,          GetIntegerProperty(properties, Properties.UserCodeLifetime))
 
             .SetClaims(Claims.Private.Audience,  GetJsonProperty(properties, Properties.Audiences))
@@ -214,6 +215,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
         SetProperty(properties, Properties.DeviceCodeLifetime,        principal.GetClaim(Claims.Private.DeviceCodeLifetime));
         SetProperty(properties, Properties.IdentityTokenLifetime,     principal.GetClaim(Claims.Private.IdentityTokenLifetime));
         SetProperty(properties, Properties.RefreshTokenLifetime,      principal.GetClaim(Claims.Private.RefreshTokenLifetime));
+        SetProperty(properties, Properties.RequestTokenLifetime,      principal.GetClaim(Claims.Private.RequestTokenLifetime));
         SetProperty(properties, Properties.UserCodeLifetime,          principal.GetClaim(Claims.Private.UserCodeLifetime));
 
         SetProperty(properties, Properties.CodeChallenge,       principal.GetClaim(Claims.Private.CodeChallenge));
@@ -249,6 +251,7 @@ public sealed class OpenIddictServerDataProtectionFormatter : IOpenIddictServerD
             Claims.Private.Presenter                 or
             Claims.Private.RedirectUri               or
             Claims.Private.RefreshTokenLifetime      or
+            Claims.Private.RequestTokenLifetime      or
             Claims.Private.Resource                  or
             Claims.Private.Scope                     or
             Claims.Private.TokenId                   or

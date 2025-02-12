@@ -24,7 +24,6 @@
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="Microsoft.AspNetCore.Authentication" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

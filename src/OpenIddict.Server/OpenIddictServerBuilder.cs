@@ -1386,6 +1386,55 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Sets the relative or absolute URIs associated to the pushed authorization endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetPushedAuthorizationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        if (uris is null)
+        {
+            throw new ArgumentNullException(nameof(uris));
+        }
+
+        return SetPushedAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the pushed authorization endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetPushedAuthorizationEndpointUris(params Uri[] uris)
+    {
+        if (uris is null)
+        {
+            throw new ArgumentNullException(nameof(uris));
+        }
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.PushedAuthorizationEndpointUris.Clear();
+            options.PushedAuthorizationEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
     /// Sets the relative or absolute URIs associated to the revocation endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
@@ -1745,11 +1794,20 @@ public sealed class OpenIddictServerBuilder
     /// <summary>
     /// Configures OpenIddict to force client applications to use Proof Key for Code Exchange
     /// (PKCE) when requesting an authorization code (e.g when using the code or hybrid flows).
-    /// When enforced, authorization requests that lack the code_challenge will be rejected.
+    /// When enforced, authorization requests that lack the code_challenge parameter will be rejected.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder RequireProofKeyForCodeExchange()
         => Configure(options => options.RequireProofKeyForCodeExchange = true);
+
+    /// <summary>
+    /// Configures OpenIddict to force client applications to use pushed authorization requests
+    /// when using an interactive flow like the authorization code or implicit flows.
+    /// When enforced, authorization requests that lack the request_id parameter will be rejected.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequirePushedAuthorizationRequests()
+        => Configure(options => options.RequirePushedAuthorizationRequests = true);
 
     /// <summary>
     /// Sets the access token lifetime, after which client applications must retrieve
@@ -1967,6 +2025,25 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder UseReferenceRefreshTokens()
         => Configure(options => options.UseReferenceRefreshTokens = true);
+
+    /// <summary>
+    /// Enables authorization request storage, so that authorization requests
+    /// are automatically stored in the token store, which allows flowing
+    /// large payloads across requests. Enabling this option can be useful
+    /// for clients that do not supported pushed authorization requests.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableAuthorizationRequestCaching()
+        => Configure(options => options.EnableAuthorizationRequestCaching = true);
+
+    /// <summary>
+    /// Enables end session request storage, so that end session requests
+    /// are automatically stored in the token store, which allows flowing
+    /// large payloads across requests.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableEndSessionRequestCaching()
+        => Configure(options => options.EnableEndSessionRequestCaching = true);
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

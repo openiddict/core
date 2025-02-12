@@ -178,12 +178,7 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
-                    => context.AccessTokenPrincipal       ??
-                       context.RefreshTokenPrincipal      ??
-                       context.IdentityTokenPrincipal     ??
-                       context.AuthorizationCodePrincipal ??
-                       context.DeviceCodePrincipal        ??
-                       context.UserCodePrincipal,
+                    => context.GenericTokenPrincipal,
 
                 OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
                     => context.AuthorizationCodePrincipal,
@@ -282,6 +277,16 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
                 });
             }
 
+            if (!string.IsNullOrEmpty(context.RequestToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.RequestToken,
+                    Value = context.RequestToken
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.UserCode))
             {
                 tokens ??= new(capacity: 1);
@@ -320,6 +325,11 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Op
             if (context.RefreshTokenPrincipal is not null)
             {
                 properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
+            }
+
+            if (context.RequestTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.RequestTokenPrincipal, context.RequestTokenPrincipal);
             }
 
             if (context.UserCodePrincipal is not null)

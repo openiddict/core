@@ -120,19 +120,38 @@ public static partial class OpenIddictClientHandlers
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
         AttachCustomChallengeParameters.Descriptor,
+
         EvaluateDeviceAuthorizationRequest.Descriptor,
         AttachDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor,
         ResolveDeviceAuthorizationEndpoint.Descriptor,
         AttachDeviceAuthorizationRequestParameters.Descriptor,
+
+        EvaluatePushedAuthorizationRequest.Descriptor,
+        AttachPushedAuthorizationEndpointClientAuthenticationMethod.Descriptor,
+        ResolvePushedAuthorizationEndpoint.Descriptor,
+        AttachPushedAuthorizationRequestParameters.Descriptor,
+
         EvaluateGeneratedChallengeClientAssertion.Descriptor,
         PrepareChallengeClientAssertionPrincipal.Descriptor,
         GenerateChallengeClientAssertion.Descriptor,
+
         AttachDeviceAuthorizationRequestClientCredentials.Descriptor,
         SendDeviceAuthorizationRequest.Descriptor,
 
         EvaluateValidatedDeviceAuthorizationTokens.Descriptor,
         ResolveValidatedDeviceAuthorizationTokens.Descriptor,
         ValidateRequiredDeviceAuthorizationTokens.Descriptor,
+
+        AttachPushedAuthorizationRequestClientCredentials.Descriptor,
+        ValidatePushedAuthorizationRequirement.Descriptor,
+        SendPushedAuthorizationRequest.Descriptor,
+
+        EvaluateValidatedPushedTokens.Descriptor,
+        ResolveValidatedPushedTokens.Descriptor,
+        ValidateRequiredPushedAuthorizationTokens.Descriptor,
+
+        AttachRequestToken.Descriptor,
+        RemovePushedAuthorizationRequestParameters.Descriptor,
 
         /*
          * Introspection processing:
@@ -880,7 +899,7 @@ public static partial class OpenIddictClientHandlers
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
-                    description: SR.GetResourceString(SR.ID2142),
+                    description: SR.FormatID2142(Parameters.State),
                     uri: SR.FormatID8000(SR.ID2142));
 
                 return default;
@@ -5738,6 +5757,205 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for determining whether a pushed authorization request should be sent.
+    /// </summary>
+    public sealed class EvaluatePushedAuthorizationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<EvaluatePushedAuthorizationRequest>()
+                .SetOrder(AttachDeviceAuthorizationRequestParameters.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.SendPushedAuthorizationRequest = context.GrantType switch
+            {
+                // For interactive grant types, always send a pushed authorization request by default if
+                // the authorization endpoint exposes a pushed authorization request endpoint and pushed
+                // authorization requests were was not explicitly opted out in the client registration.
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit
+                    when context.Configuration.PushedAuthorizationEndpoint is not null &&
+                        !context.Registration.DisablePushedAuthorizationRequests => true,
+
+                // Apply the same logic to the special response_type=none flow.
+                null when context.ResponseType is ResponseTypes.None &&
+                          context.Configuration.PushedAuthorizationEndpoint is not null &&
+                         !context.Registration.DisablePushedAuthorizationRequests => true,
+
+                // Otherwise, do not send a pushed authorization request.
+                _ => false
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for negotiating the best pushed authorization endpoint
+    /// client authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachPushedAuthorizationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<AttachPushedAuthorizationEndpointClientAuthenticationMethod>()
+                .SetOrder(EvaluatePushedAuthorizationRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.PushedAuthorizationEndpointClientAuthenticationMethod))
+            {
+                return default;
+            }
+
+            context.PushedAuthorizationEndpointClientAuthenticationMethod = (
+                // Note: if client authentication methods are explicitly listed in the client registration, only use
+                // the client authentication methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the client authentication methods that have been enabled globally.
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+
+                // Note: if the authorization server doesn't support the OpenIddict-specific
+                // "pushed_authorization_request_endpoint_auth_methods_supported" node, fall back to
+                // the "token_endpoint_auth_methods_supported" node, as required by the specification.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9126#section-2 for more information.
+                Server: context.Configuration.PushedAuthorizationEndpointAuthMethodsSupported.Count switch
+                {
+                    0 => context.Configuration.TokenEndpointAuthMethodsSupported,
+                    _ => context.Configuration.PushedAuthorizationEndpointAuthMethodsSupported,
+                }) switch
+            {
+                // If at least one signing key was attached to the client registration and both
+                // the client and the server explicitly support private_key_jwt, always prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when context.Registration.SigningCredentials.Count is not 0 &&
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                // If a client secret was attached to the client registration and both the client and
+                // the server explicitly support client_secret_post, prefer it to basic authentication.
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the pushed authorization endpoint.
+    /// </summary>
+    public sealed class ResolvePushedAuthorizationEndpoint : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<ResolvePushedAuthorizationEndpoint>()
+                .SetOrder(AttachPushedAuthorizationEndpointClientAuthenticationMethod.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // If the URI of the pushed authorization endpoint endpoint wasn't
+            // explicitly set at this stage, try to extract it from the server configuration.
+            context.PushedAuthorizationEndpoint ??= context.PushedAuthorizationEndpointClientAuthenticationMethod switch
+            {
+                // When TLS client certificate authentication was negotiated,
+                // always favor the mTLS-specific endpoint if available.
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth or ClientAuthenticationMethods.TlsClientAuth
+                    when context.Configuration.MtlsPushedAuthorizationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                // Otherwise, use the non-mTLS-specific endpoint.
+                _ when context.Configuration.PushedAuthorizationEndpoint is { IsAbsoluteUri: true } uri &&
+                    !OpenIddictHelpers.IsImplicitFileUri(uri) => uri,
+
+                _ => null
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters to the pushed authorization request, if applicable.
+    /// </summary>
+    public sealed class AttachPushedAuthorizationRequestParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<AttachPushedAuthorizationRequestParameters>()
+                .SetOrder(ResolvePushedAuthorizationEndpoint.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Attach a new request instance if necessary.
+            context.PushedAuthorizationRequest ??= new OpenIddictRequest();
+
+            // Copy all the challenge parameters to the pushed authorization request instance.
+            foreach (var parameter in context.Request.GetParameters())
+            {
+                context.PushedAuthorizationRequest.AddParameter(parameter.Key, parameter.Value);
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for selecting the token types that should
     /// be generated and optionally sent as part of the challenge demand.
     /// </summary>
@@ -5762,12 +5980,12 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.GenerateClientAssertion,
-             context.IncludeClientAssertion) = context.DeviceAuthorizationEndpointClientAuthenticationMethod switch
+            (context.GenerateClientAssertion, context.IncludeClientAssertion) = context switch
             {
                 // If the private_key_jwt client authentication method could be negotiated,
                 // generate a client assertion that will be used to authenticate the client.
-                ClientAuthenticationMethods.PrivateKeyJwt => (true, true),
+                { DeviceAuthorizationEndpointClientAuthenticationMethod: ClientAuthenticationMethods.PrivateKeyJwt } => (true, true),
+                { PushedAuthorizationEndpointClientAuthenticationMethod: ClientAuthenticationMethods.PrivateKeyJwt } => (true, true),
 
                 _ => (false, false)
             };
@@ -6143,6 +6361,329 @@ public static partial class OpenIddictClientHandlers
 
                 return default;
             }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client credentials to the pushed authorization endpoint request, if applicable.
+    /// </summary>
+    public sealed class AttachPushedAuthorizationRequestClientCredentials : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<AttachPushedAuthorizationRequestClientCredentials>()
+                .SetOrder(ValidateRequiredDeviceAuthorizationTokens.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.PushedAuthorizationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
+            context.PushedAuthorizationRequest.ClientId = context.ClientId;
+
+            // Note: client authentication methods are mutually exclusive so the client_assertion
+            // and client_secret parameters MUST never be sent at the same time. For more information,
+            // see https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.
+            if (context.IncludeClientAssertion)
+            {
+                context.PushedAuthorizationRequest.ClientAssertion = context.ClientAssertion;
+                context.PushedAuthorizationRequest.ClientAssertionType = context.ClientAssertionType;
+            }
+
+            else if (context.PushedAuthorizationEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
+            {
+                context.PushedAuthorizationRequest.ClientSecret = context.Registration.ClientSecret;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for aborting authentication demands pointing to client registrations that
+    /// disallow using pushed authorization requests if the authorization server requires using this feature.
+    /// </summary>
+    public sealed class ValidatePushedAuthorizationRequirement : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<ValidatePushedAuthorizationRequirement>()
+                .SetOrder(AttachPushedAuthorizationRequestClientCredentials.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (!context.SendPushedAuthorizationRequest && context.Configuration.RequirePushedAuthorizationRequests is true)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0460));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for sending the pushed authorization endpoint request, if applicable.
+    /// </summary>
+    public sealed class SendPushedAuthorizationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public SendPushedAuthorizationRequest(OpenIddictClientService service)
+            => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<SendPushedAuthorizationRequest>()
+                .SetOrder(ValidatePushedAuthorizationRequirement.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.PushedAuthorizationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Ensure the pushed authorization endpoint is present and is a valid absolute URI.
+            if (context.PushedAuthorizationEndpoint is not { IsAbsoluteUri: true } ||
+                OpenIddictHelpers.IsImplicitFileUri(context.PushedAuthorizationEndpoint))
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.PushedAuthorizationRequestEndpoint));
+            }
+
+            try
+            {
+                context.PushedAuthorizationResponse = await _service.SendPushedAuthorizationRequestAsync(
+                    context.Registration, context.Configuration,
+                    context.PushedAuthorizationRequest, context.PushedAuthorizationEndpoint,
+                    context.PushedAuthorizationEndpointClientAuthenticationMethod, context.CancellationToken);
+            }
+
+            catch (ProtocolException exception)
+            {
+                context.Reject(
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
+
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for determining the set of pushed authorization tokens to validate.
+    /// </summary>
+    public sealed class EvaluateValidatedPushedTokens : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<EvaluateValidatedPushedTokens>()
+                .SetOrder(SendPushedAuthorizationRequest.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            (context.ExtractRequestToken,
+             context.RequireRequestToken,
+             context.ValidateRequestToken,
+             context.RejectRequestToken) = context.SendPushedAuthorizationRequest switch
+            {
+                // A request_uri parameter (whose content is called a request token in
+                // OpenIddict) is always returned as part of pushed authorization responses.
+                //
+                // Note: since request tokens are supposed to be opaque to the clients,
+                // they are never validated by default. Clients that need to deal with
+                // non-standard implementations can use custom handlers to validate
+                // request tokens that use a readable format (e.g JWT).
+                true => (true, true, false, false),
+
+               _ => (false, false, false, false)
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the pushed
+    /// tokens from the pushed authorization response, if applicable.
+    /// </summary>
+    public sealed class ResolveValidatedPushedTokens : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<ResolveValidatedPushedTokens>()
+                .SetOrder(EvaluateValidatedPushedTokens.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.PushedAuthorizationResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            context.RequestToken = context.ExtractRequestToken ? context.PushedAuthorizationResponse.RequestUri : null;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting challenge demands that lack required tokens.
+    /// </summary>
+    public sealed class ValidateRequiredPushedAuthorizationTokens : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<ValidateRequiredPushedAuthorizationTokens>()
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(ResolveValidatedPushedTokens.Descriptor.Order + 50_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.RequireRequestToken && string.IsNullOrEmpty(context.RequestToken))
+            {
+                context.Reject(
+                    error: Errors.MissingToken,
+                    description: SR.GetResourceString(SR.ID2000),
+                    uri: SR.FormatID8000(SR.ID2000));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the request token to the authorization request.
+    /// </summary>
+    public sealed class AttachRequestToken : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<AttachRequestToken>()
+                .SetOrder(ValidateRequiredPushedAuthorizationTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            context.Request.RequestUri = context.RequestToken;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for removing parameters that were sent as
+    /// part of the pushed authorization request from the authorization request.
+    /// </summary>
+    public sealed class RemovePushedAuthorizationRequestParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .AddFilter<RequirePushedAuthorizationRequest>()
+                .UseSingletonHandler<RemovePushedAuthorizationRequestParameters>()
+                .SetOrder(AttachRequestToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.PushedAuthorizationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Filter out all the parameters that were sent in the pushed authorization request from
+            // the regular authorization request, except the "client_id" parameter, as required
+            // by the specification: https://datatracker.ietf.org/doc/html/rfc9101#section-5.
+            context.Request = new OpenIddictRequest(
+                from parameter in context.Request.GetParameters()
+                where parameter.Key is Parameters.ClientId || !context.PushedAuthorizationRequest.HasParameter(parameter.Key)
+                select parameter);
 
             return default;
         }

@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,13 +29,16 @@ public static partial class OpenIddictServerHandlers
             HandleEndSessionRequest.Descriptor,
             ApplyEndSessionResponse<ProcessErrorContext>.Descriptor,
             ApplyEndSessionResponse<ProcessRequestContext>.Descriptor,
+            ApplyEndSessionResponse<ProcessSignInContext>.Descriptor,
             ApplyEndSessionResponse<ProcessSignOutContext>.Descriptor,
 
             /*
              * End-session request validation:
              */
+            ValidateRequestUriParameter.Descriptor,
             ValidatePostLogoutRedirectUriParameter.Descriptor,
             ValidateAuthentication.Descriptor,
+            RestorePushedAuthorizationRequestParameters.Descriptor,
             ValidateClientPostLogoutRedirectUri.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateAuthorizedParty.Descriptor,
@@ -266,6 +270,47 @@ public static partial class OpenIddictServerHandlers
                     }
                 }
 
+                else if (context.Options.EnableEndSessionRequestCaching &&
+                    string.IsNullOrEmpty(context.Transaction.Request?.RequestUri))
+                {
+                    var @event = new ProcessSignInContext(context.Transaction)
+                    {
+                        Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+                        Response = new OpenIddictResponse()
+                    };
+
+                    if (notification.Parameters.Count > 0)
+                    {
+                        foreach (var parameter in notification.Parameters)
+                        {
+                            @event.Parameters.Add(parameter.Key, parameter.Value);
+                        }
+                    }
+
+                    await _dispatcher.DispatchAsync(@event);
+
+                    if (@event.IsRequestHandled)
+                    {
+                        context.HandleRequest();
+                        return;
+                    }
+
+                    else if (@event.IsRequestSkipped)
+                    {
+                        context.SkipRequest();
+                        return;
+                    }
+
+                    else if (@event.IsRejected)
+                    {
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
+                    }
+                }
+
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0051));
             }
         }
@@ -315,6 +360,63 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0052));
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that specify an invalid request_uri parameter.
+        /// </summary>
+        public sealed class ValidateRequestUriParameter : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
+                    .UseSingletonHandler<ValidateRequestUriParameter>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateEndSessionRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (string.IsNullOrEmpty(context.Request.RequestUri))
+                {
+                    return default;
+                }
+
+                // OpenIddict only supports "request_uri" parameters containing a reference to a request token
+                // generated via the automatic request caching feature. Since OpenIddict uses a specific URN
+                // prefix for request tokens it generates, all the other values are automatically rejected.
+                if (!context.Request.RequestUri.StartsWith(RequestUris.Prefixes.Generic, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.RequestUriNotSupported,
+                        description: SR.FormatID2028(Parameters.RequestUri),
+                        uri: SR.FormatID8000(SR.ID2028));
+
+                    return default;
+                }
+
+                // For consistency with authorization requests, the client_id parameter
+                // is also required when using a request_uri parameter is present.
+                if (string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2037(Parameters.RequestUri, Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2037));
+
+                    return default;
+                }
+
+                return default;
             }
         }
 
@@ -431,8 +533,51 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                // Attach the security principal extracted from the token to the validation context.
+                // Attach the security principals extracted from the tokens to the validation context.
                 context.IdentityTokenHintPrincipal = notification.IdentityTokenPrincipal;
+                context.RequestTokenPrincipal = notification.RequestTokenPrincipal;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for restoring the parameters attached to the pushed authorization request.
+        /// </summary>
+        public sealed class RestorePushedAuthorizationRequestParameters : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
+                    .UseSingletonHandler<RestorePushedAuthorizationRequestParameters>()
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateEndSessionRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var value = context.RequestTokenPrincipal?.GetClaim(Claims.Private.RequestParameters);
+                if (string.IsNullOrEmpty(value))
+                {
+                    return default;
+                }
+
+                using var document = JsonDocument.Parse(value);
+                var request = new OpenIddictRequest(document.RootElement.Clone())
+                {
+                    RequestUri = context.Request.RequestUri
+                };
+
+                context.Request = request;
+                context.PostLogoutRedirectUri = request.PostLogoutRedirectUri;
+
+                return default;
             }
         }
 
@@ -458,7 +603,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequirePostLogoutRedirectUriParameter>()
                     .UseScopedHandler<ValidateClientPostLogoutRedirectUri>()
-                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
+                    .SetOrder(RestorePushedAuthorizationRequestParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -838,7 +983,9 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Request is null)
+                // If the end session response contains a request token, do not use the
+                // post_logout_redirect_uri, as the user agent will be redirected to the same page.
+                if (context.Request is null || !string.IsNullOrEmpty(context.Response.RequestUri))
                 {
                     return default;
                 }
@@ -880,8 +1027,11 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Attach the request state to the end session response.
-                if (string.IsNullOrEmpty(context.Response.State))
+                // If the user agent is expected to be redirected to the client application, attach the request
+                // state to the end session response to help the client mitigate CSRF/session fixation attacks.
+                //
+                // Note: don't override the state if one was already attached to the response instance.
+                if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) && string.IsNullOrEmpty(context.Response.State))
                 {
                     context.Response.State = context.Request?.State;
                 }

@@ -87,6 +87,7 @@ public class Startup
                        .SetEndSessionEndpointUris("connect/endsession")
                        .SetEndUserVerificationEndpointUris("connect/verify")
                        .SetIntrospectionEndpointUris("connect/introspect")
+                       .SetPushedAuthorizationEndpointUris("connect/par")
                        .SetTokenEndpointUris("connect/token")
                        .SetUserInfoEndpointUris("connect/userinfo");
 
@@ -102,9 +103,6 @@ public class Startup
                 // Register the signing and encryption credentials.
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
-
-                // Force client applications to use Proof Key for Code Exchange (PKCE).
-                options.RequireProofKeyForCodeExchange();
 
                 // Register the OWIN host and configure the OWIN-specific options.
                 options.UseOwin()
@@ -215,6 +213,7 @@ public class Startup
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.EndSession,
+                        Permissions.Endpoints.PushedAuthorization,
                         Permissions.Endpoints.Token,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
@@ -226,7 +225,8 @@ public class Startup
                     },
                     Requirements =
                     {
-                        Requirements.Features.ProofKeyForCodeExchange
+                        Requirements.Features.ProofKeyForCodeExchange,
+                        Requirements.Features.PushedAuthorizationRequests
                     }
                 });
             }

@@ -228,13 +228,6 @@ public class OpenIddictRequestTests
 
             yield return new object[]
             {
-                /* property: */ nameof(OpenIddictRequest.RequestId),
-                /* name: */ Parameters.RequestId,
-                /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
-            };
-
-            yield return new object[]
-            {
                 /* property: */ nameof(OpenIddictRequest.RequestUri),
                 /* name: */ Parameters.RequestUri,
                 /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")

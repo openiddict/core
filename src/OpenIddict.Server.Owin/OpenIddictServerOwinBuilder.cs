@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using Microsoft.Extensions.Caching.Distributed;
+using OpenIddict.Server;
 using OpenIddict.Server.Owin;
 using Owin;
 
@@ -124,16 +125,26 @@ public sealed class OpenIddictServerOwinBuilder
     /// OpenID Connect authorization requests support is required.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerOwinBuilder EnableAuthorizationRequestCaching()
-        => Configure(options => options.EnableAuthorizationRequestCaching = true);
+    {
+        Services.Configure<OpenIddictServerOptions>(options => options.EnableAuthorizationRequestCaching = true);
+
+        return this;
+    }
 
     /// <summary>
     /// Enables end session request caching, so that end session requests
     /// are automatically stored in the distributed cache.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerOwinBuilder EnableEndSessionRequestCaching()
-        => Configure(options => options.EnableEndSessionRequestCaching = true);
+    {
+        Services.Configure<OpenIddictServerOptions>(options => options.EnableEndSessionRequestCaching = true);
+
+        return this;
+    }
 
     /// <summary>
     /// Suppresses indentation for the JSON responses returned by the OWIN host.
@@ -163,6 +174,7 @@ public sealed class OpenIddictServerOwinBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
@@ -179,6 +191,7 @@ public sealed class OpenIddictServerOwinBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerOwinBuilder SetEndSessionRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)

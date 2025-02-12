@@ -113,35 +113,48 @@ public static partial class OpenIddictServerDataProtectionHandlers
                             ValidateToken(TokenTypeHints.AccessToken)       ??
                             ValidateToken(TokenTypeHints.RefreshToken)      ??
                             ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode),
+                            ValidateToken(TokenTypeHints.UserCode)          ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         TokenTypeHints.DeviceCode =>
                             ValidateToken(TokenTypeHints.DeviceCode)        ??
                             ValidateToken(TokenTypeHints.AccessToken)       ??
                             ValidateToken(TokenTypeHints.RefreshToken)      ??
                             ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.UserCode),
+                            ValidateToken(TokenTypeHints.UserCode)          ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         TokenTypeHints.RefreshToken =>
                             ValidateToken(TokenTypeHints.RefreshToken)      ??
                             ValidateToken(TokenTypeHints.AccessToken)       ??
                             ValidateToken(TokenTypeHints.AuthorizationCode) ??
                             ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode),
+                            ValidateToken(TokenTypeHints.UserCode)          ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         TokenTypeHints.UserCode =>
                             ValidateToken(TokenTypeHints.UserCode)          ??
                             ValidateToken(TokenTypeHints.AccessToken)       ??
                             ValidateToken(TokenTypeHints.RefreshToken)      ??
                             ValidateToken(TokenTypeHints.AuthorizationCode) ??
-                            ValidateToken(TokenTypeHints.DeviceCode),
+                            ValidateToken(TokenTypeHints.DeviceCode)        ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
+
+                        TokenTypeHints.Private.RequestToken =>
+                            ValidateToken(TokenTypeHints.AccessToken)       ??
+                            ValidateToken(TokenTypeHints.RefreshToken)      ??
+                            ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                            ValidateToken(TokenTypeHints.DeviceCode)        ??
+                            ValidateToken(TokenTypeHints.UserCode)          ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         _ =>
                             ValidateToken(TokenTypeHints.AccessToken)       ??
                             ValidateToken(TokenTypeHints.RefreshToken)      ??
                             ValidateToken(TokenTypeHints.AuthorizationCode) ??
                             ValidateToken(TokenTypeHints.DeviceCode)        ??
-                            ValidateToken(TokenTypeHints.UserCode),
+                            ValidateToken(TokenTypeHints.UserCode)          ??
+                            ValidateToken(TokenTypeHints.Private.RequestToken),
                     },
 
                     // If a single valid token type was set, ignore the specified token type hint.
@@ -152,6 +165,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
                         TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
                         TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
                         TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
+
+                        TokenTypeHints.Private.RequestToken => ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                     },
@@ -169,6 +184,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
                         TokenTypeHints.DeviceCode        => 4,
                         TokenTypeHints.UserCode          => 5,
 
+                        TokenTypeHints.Private.RequestToken => 6,
+
                         _ => int.MaxValue
                     })
                     .Select(type => type switch
@@ -178,6 +195,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
                         TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
                         TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
                         TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
+
+                        TokenTypeHints.Private.RequestToken => ValidateToken(TokenTypeHints.Private.RequestToken),
 
                         _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                     })
@@ -233,6 +252,11 @@ public static partial class OpenIddictServerDataProtectionHandlers
                                 => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
                             (TokenTypeHints.UserCode, false)
                                 => [Handlers.Server, Formats.UserCode, Schemes.Server],
+
+                            (TokenTypeHints.Private.RequestToken, true)
+                                => [Handlers.Server, Formats.RequestToken, Features.ReferenceTokens, Schemes.Server],
+                            (TokenTypeHints.Private.RequestToken, false)
+                                => [Handlers.Server, Formats.RequestToken, Schemes.Server],
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                         });
@@ -309,6 +333,9 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     TokenTypeHints.UserCode when !_options.CurrentValue.PreferDefaultUserCodeFormat
                         => TokenFormats.Private.DataProtection,
 
+                    TokenTypeHints.Private.RequestToken when !_options.CurrentValue.PreferDefaultRequestTokenFormat
+                        => TokenFormats.Private.DataProtection,
+
                     _ => context.TokenFormat // Don't override the format if the token type is not supported.
                 };
 
@@ -381,6 +408,11 @@ public static partial class OpenIddictServerDataProtectionHandlers
                             => [Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server],
                         (TokenTypeHints.UserCode, false)
                             => [Handlers.Server, Formats.UserCode, Schemes.Server],
+
+                        (TokenTypeHints.Private.RequestToken, true)
+                            => [Handlers.Server, Formats.RequestToken, Features.ReferenceTokens, Schemes.Server],
+                        (TokenTypeHints.Private.RequestToken, false)
+                            => [Handlers.Server, Formats.RequestToken, Schemes.Server],
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     });

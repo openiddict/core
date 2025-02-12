@@ -117,6 +117,11 @@ public static partial class OpenIddictServerEvents
         public Uri? IntrospectionEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the pushed authorization endpoint URI.
+        /// </summary>
+        public Uri? PushedAuthorizationEndpoint { get; set; }
+
+        /// <summary>
         /// Gets or sets the revocation endpoint URI.
         /// </summary>
         public Uri? RevocationEndpoint { get; set; }
@@ -172,6 +177,12 @@ public static partial class OpenIddictServerEvents
         public HashSet<string> PromptValues { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets a list of client authentication methods supported by the pushed
+        /// authorization endpoint provided by the authorization server.
+        /// </summary>
+        public HashSet<string> PushedAuthorizationEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the list of response modes
         /// supported by the authorization server.
         /// </summary>
@@ -206,6 +217,11 @@ public static partial class OpenIddictServerEvents
         /// the token endpoint provided by the authorization server.
         /// </summary>
         public HashSet<string> TokenEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether pushed authorization requests are required.
+        /// </summary>
+        public bool RequirePushedAuthorizationRequests { get; set; }
     }
 
     /// <summary>

@@ -33,6 +33,15 @@ public sealed class OpenIddictClientRegistration
     public string? ClientSecret { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether pushed authorization requests are disabled.
+    /// When pushed authorization requests are disabled, PAR is not used by the OpenIddict client,
+    /// even if the remote authorization server exposes a pushed authorization endpoint. If the
+    /// authorization server requires using PAR but this property is set to <see langword="null"/>,
+    /// an exception is automatically thrown when starting an interactive authentication challenge.
+    /// </summary>
+    public bool DisablePushedAuthorizationRequests { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
     /// <remarks>

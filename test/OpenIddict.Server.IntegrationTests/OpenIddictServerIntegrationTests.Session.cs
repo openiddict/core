@@ -131,12 +131,87 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("Bob le Magnifique", (string?) response["name"]);
     }
 
+    [Fact]
+    public async Task ValidateEndSessionRequest_UnsupportedRequestUriIsRejected()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/connect/endsession", new OpenIddictRequest
+        {
+            RequestUri = "http://www.fabrikam.com/request/GkurKxf5T0Y-mnPFCHqWOMiZi4VS138cQO_V7PZHAdM"
+        });
+
+        // Assert
+        Assert.Equal(Errors.RequestUriNotSupported, response.Error);
+        Assert.Equal(SR.FormatID2028(Parameters.RequestUri), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2028), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateEndSession_ValidRequestUriDoesNotCauseAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleEndSessionRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SignOut();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("6esc_11ACC5bwc014ltc14eY22c", context.Token);
+                    Assert.Equal([TokenTypeHints.Private.RequestToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.Private.RequestToken)
+                        .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.CachedEndSessionRequest)
+                        .SetClaim(Claims.Private.RequestParameters, $$"""
+                        {
+                          "post_logout_redirect_uri": "http://www.fabrikam.com/path",
+                          "state": "af0ifjsldkj"
+                        }
+                        """);
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/connect/endsession", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = RequestUris.Prefixes.Generic + "6esc_11ACC5bwc014ltc14eY22c"
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.Null(response.ErrorDescription);
+        Assert.Null(response.ErrorUri);
+        Assert.Equal("af0ifjsldkj", response.State);
+    }
+
     [Theory]
     [InlineData("/path", SR.ID2030)]
     [InlineData("/tmp/file.xml", SR.ID2030)]
     [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
     [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
-    public async Task ValidateEndSessionRequest_InvalidRedirectUriCausesAnError(string uri, string message)
+    public async Task ValidateEndSessionRequest_InvalidPostLogoutRedirectUriCausesAnError(string uri, string message)
     {
         // Arrange
         await using var server = await CreateServerAsync();

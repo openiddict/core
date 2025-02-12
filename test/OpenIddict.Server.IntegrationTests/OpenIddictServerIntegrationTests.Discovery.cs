@@ -317,6 +317,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                    .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
                    .SetEndSessionEndpointUris("path/logout_endpoint")
+                   .SetPushedAuthorizationEndpointUris("path/pushed_authorization_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
                    .SetUserInfoEndpointUris("path/userinfo_endpoint");
@@ -333,6 +334,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("http://localhost/path/device_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
         Assert.Equal("http://localhost/path/introspection_endpoint", (string?) response[Metadata.IntrospectionEndpoint]);
         Assert.Equal("http://localhost/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
+        Assert.Equal("http://localhost/path/pushed_authorization_endpoint", (string?) response[Metadata.PushedAuthorizationRequestEndpoint]);
         Assert.Equal("http://localhost/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("http://localhost/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
         Assert.Equal("http://localhost/path/userinfo_endpoint", (string?) response[Metadata.UserInfoEndpoint]);
@@ -349,6 +351,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                    .SetDeviceAuthorizationEndpointUris("path/device_endpoint")
                    .SetIntrospectionEndpointUris("path/introspection_endpoint")
                    .SetEndSessionEndpointUris("path/logout_endpoint")
+                   .SetPushedAuthorizationEndpointUris("path/pushed_authorization_endpoint")
                    .SetRevocationEndpointUris("path/revocation_endpoint")
                    .SetTokenEndpointUris("path/token_endpoint")
                    .SetUserInfoEndpointUris("path/userinfo_endpoint");
@@ -377,6 +380,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("https://contoso.com/issuer/path/device_endpoint", (string?) response[Metadata.DeviceAuthorizationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/introspection_endpoint", (string?) response[Metadata.IntrospectionEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/logout_endpoint", (string?) response[Metadata.EndSessionEndpoint]);
+        Assert.Equal("https://contoso.com/issuer/path/pushed_authorization_endpoint", (string?) response[Metadata.PushedAuthorizationRequestEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/revocation_endpoint", (string?) response[Metadata.RevocationEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/token_endpoint", (string?) response[Metadata.TokenEndpoint]);
         Assert.Equal("https://contoso.com/issuer/path/userinfo_endpoint", (string?) response[Metadata.UserInfoEndpoint]);
@@ -547,6 +551,48 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Act
         var response = await client.GetAsync("/.well-known/openid-configuration");
         var methods = (string[]?) response[Metadata.DeviceAuthorizationEndpointAuthMethodsSupported];
+
+        // Assert
+        Assert.NotNull(methods);
+        Assert.Equal(3, methods.Length);
+        Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
+        Assert.Contains(ClientAuthenticationMethods.PrivateKeyJwt, methods);
+        Assert.Contains("custom", methods);
+    }
+
+    [Fact]
+    public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenPushedAuthorizationEndpointIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetPushedAuthorizationEndpointUris(Array.Empty<Uri>());
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.False(response.HasParameter(Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported));
+    }
+
+    [Fact]
+    public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenPushedAuthorizationEndpointIsEnabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.ClientAuthenticationMethods.Remove(ClientAuthenticationMethods.ClientSecretBasic);
+            options.ClientAuthenticationMethods.Add("custom");
+        }));
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+        var methods = (string[]?) response[Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported];
 
         // Assert
         Assert.NotNull(methods);
@@ -928,6 +974,26 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.False((bool?) response[Metadata.ClaimsParameterSupported]);
         Assert.False((bool?) response[Metadata.RequestParameterSupported]);
         Assert.False((bool?) response[Metadata.RequestUriParameterSupported]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task HandleConfigurationRequest_PushedAuthorizationRequestsRequirementIsReflected(bool value)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.Configure(options =>
+        {
+            options.RequirePushedAuthorizationRequests = value;
+        }));
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.Equal(value, (bool?) response[Metadata.RequirePushedAuthorizationRequests]);
     }
 
     [Theory]

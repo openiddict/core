@@ -21,7 +21,8 @@ public static partial class OpenIddictClientHandlers
              */
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
-            ValidateVerificationEndpointUri.Descriptor
+            ValidateVerificationEndpointUri.Descriptor,
+            ValidateExpiration.Descriptor
         ]);
 
         /// <summary>

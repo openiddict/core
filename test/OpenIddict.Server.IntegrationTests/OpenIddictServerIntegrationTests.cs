@@ -98,6 +98,14 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("/.WELL-KNOWN/JWKS/SUBPATH", OpenIddictServerEndpointType.Unknown)]
     [InlineData("/.well-known/jwks/subpath/", OpenIddictServerEndpointType.Unknown)]
     [InlineData("/.WELL-KNOWN/JWKS/SUBPATH/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("/connect/par", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("/CONNECT/PAR", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("/connect/par/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("/CONNECT/PAR/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("/connect/par/subpath", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("/CONNECT/PAR/SUBPATH", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("/connect/par/subpath/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("/CONNECT/PAR/SUBPATH/", OpenIddictServerEndpointType.Unknown)]
     [InlineData("/connect/revoke", OpenIddictServerEndpointType.Revocation)]
     [InlineData("/CONNECT/REVOKE", OpenIddictServerEndpointType.Revocation)]
     [InlineData("/connect/revoke/", OpenIddictServerEndpointType.Revocation)]
@@ -284,6 +292,22 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("HTTPS://LOCALHOST:8888/.WELL-KNOWN/JWKS", OpenIddictServerEndpointType.Unknown)]
     [InlineData("https://localhost:8888/.well-known/jwks/", OpenIddictServerEndpointType.Unknown)]
     [InlineData("HTTPS://LOCALHOST:8888/.WELL-KNOWN/JWKS/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("https://localhost/connect/par", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("HTTPS://LOCALHOST/CONNECT/PAR", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("https://localhost/connect/par/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("HTTPS://LOCALHOST/CONNECT/PAR/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("https://localhost:443/connect/par", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("HTTPS://LOCALHOST:443/CONNECT/PAR", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("https://localhost:443/connect/par/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("HTTPS://LOCALHOST:443/CONNECT/PAR/", OpenIddictServerEndpointType.PushedAuthorization)]
+    [InlineData("https://fabrikam.com/connect/par", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("HTTPS://FABRIKAM.COM/CONNECT/PAR", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("https://fabrikam.com/connect/par/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("HTTPS://FABRIKAM.COM/CONNECT/PAR/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("https://localhost:8888/connect/par", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("HTTPS://LOCALHOST:8888/CONNECT/PAR", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("https://localhost:8888/connect/par/", OpenIddictServerEndpointType.Unknown)]
+    [InlineData("HTTPS://LOCALHOST:8888/CONNECT/PAR/", OpenIddictServerEndpointType.Unknown)]
     [InlineData("https://localhost/connect/revoke", OpenIddictServerEndpointType.Revocation)]
     [InlineData("HTTPS://LOCALHOST/CONNECT/REVOKE", OpenIddictServerEndpointType.Revocation)]
     [InlineData("https://localhost/connect/revoke/", OpenIddictServerEndpointType.Revocation)]
@@ -345,6 +369,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                    .SetDeviceAuthorizationEndpointUris("https://localhost/connect/device")
                    .SetIntrospectionEndpointUris("https://localhost/connect/introspect")
                    .SetEndSessionEndpointUris("https://localhost/connect/endsession")
+                   .SetPushedAuthorizationEndpointUris("https://localhost/connect/par")
                    .SetRevocationEndpointUris("https://localhost/connect/revoke")
                    .SetTokenEndpointUris("https://localhost/connect/token")
                    .SetUserInfoEndpointUris("https://localhost/connect/userinfo")
@@ -390,6 +415,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("/custom/connect/custom", OpenIddictServerEndpointType.Unknown)]
     [InlineData("/custom/connect/introspect", OpenIddictServerEndpointType.Introspection)]
     [InlineData("/custom/connect/endsession", OpenIddictServerEndpointType.EndSession)]
+    [InlineData("/custom/connect/par", OpenIddictServerEndpointType.PushedAuthorization)]
     [InlineData("/custom/connect/revoke", OpenIddictServerEndpointType.Revocation)]
     [InlineData("/custom/connect/token", OpenIddictServerEndpointType.Token)]
     [InlineData("/custom/connect/userinfo", OpenIddictServerEndpointType.UserInfo)]
@@ -492,9 +518,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetEndSessionEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleEndSessionRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -522,9 +548,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableDegradedMode();
-            options.SetEndSessionEndpointUris("/authenticate");
+            options.SetUserInfoEndpointUris("/authenticate");
 
-            options.AddEventHandler<HandleEndSessionRequestContext>(builder =>
+            options.AddEventHandler<HandleUserInfoRequestContext>(builder =>
                 builder.UseInlineHandler(context =>
                 {
                     context.SkipRequest();
@@ -811,6 +837,210 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RequestTokenPrincipalIsNotPopulatedWhenRequestTokenIsMissing()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.Null(context.RequestTokenPrincipal);
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MaxValue);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code,
+            Scope = Scopes.OpenId
+        });
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RequestTokenPrincipalIsNotPopulatedWhenRequestTokenIsInvalid()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.Null(context.RequestTokenPrincipal);
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MaxValue);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = RequestUris.Prefixes.Generic + "request_token"
+        });
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RequestTokenPrincipalIsPopulatedWhenRequestTokenTypeIsInvalid()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("request_token", context.Token);
+                    Assert.Equal([TokenTypeHints.Private.RequestToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.Private.RequestToken)
+                        .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.CachedEndSessionRequest);
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.NotNull(context.RequestTokenPrincipal);
+                    Assert.NotNull(context.RequestTokenPrincipal.GetClaim(Claims.Private.RequestParameters));
+
+                    return default;
+                });
+
+                builder.SetOrder(int.MaxValue);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = RequestUris.Prefixes.Generic + "request_token"
+        });
+    }
+
+    [Fact]
+    public async Task ProcessAuthentication_RequestTokenPrincipalIsPopulatedWhenRequestTokenIsValid()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("request_token", context.Token);
+                    Assert.Equal([TokenTypeHints.Private.RequestToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.Private.RequestToken)
+                        .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.PushedAuthorizationRequest)
+                        .SetClaim(Claims.Private.RequestParameters, "{}");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.NotNull(context.RequestTokenPrincipal);
+                    Assert.NotNull(context.RequestTokenPrincipal.GetClaim(Claims.Private.RequestParameters));
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateRequestTokenType.Descriptor.Order + 1);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = RequestUris.Prefixes.Generic + "request_token"
+        });
     }
 
     [Fact]
@@ -3885,6 +4115,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                        .SetDeviceAuthorizationEndpointUris("/connect/device")
                        .SetIntrospectionEndpointUris("/connect/introspect")
                        .SetEndSessionEndpointUris("/connect/endsession")
+                       .SetPushedAuthorizationEndpointUris("/connect/par")
                        .SetRevocationEndpointUris("/connect/revoke")
                        .SetTokenEndpointUris("/connect/token")
                        .SetUserInfoEndpointUris("/connect/userinfo")
@@ -3921,10 +4152,16 @@ public abstract partial class OpenIddictServerIntegrationTests
                 options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
+                options.AddEventHandler<ValidateDeviceAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context => default));
+
                 options.AddEventHandler<ValidateEndSessionRequestContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
                 options.AddEventHandler<ValidateEndUserVerificationRequestContext>(builder =>
+                    builder.UseInlineHandler(context => default));
+
+                options.AddEventHandler<ValidatePushedAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context => default));
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>

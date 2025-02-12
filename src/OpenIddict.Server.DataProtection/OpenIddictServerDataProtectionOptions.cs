@@ -47,6 +47,12 @@ public sealed class OpenIddictServerDataProtectionOptions
     public bool PreferDefaultDeviceCodeFormat { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the default user code format should be used when issuing
+    /// new request tokens. This property is set to <see langword="false"/> by default.
+    /// </summary>
+    public bool PreferDefaultRequestTokenFormat { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the default refresh token format should be
     /// used when issuing new refresh tokens. This property is set to <see langword="false"/> by default.
     /// </summary>

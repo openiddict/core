@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.Caching.Distributed;
+using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -127,16 +128,26 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// OpenID Connect authorization requests support is required.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerAspNetCoreBuilder EnableAuthorizationRequestCaching()
-        => Configure(options => options.EnableAuthorizationRequestCaching = true);
+    {
+        Services.Configure<OpenIddictServerOptions>(options => options.EnableAuthorizationRequestCaching = true);
+
+        return this;
+    }
 
     /// <summary>
     /// Enables end session request caching, so that end session requests
     /// are automatically stored in the distributed cache.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerAspNetCoreBuilder EnableEndSessionRequestCaching()
-        => Configure(options => options.EnableEndSessionRequestCaching = true);
+    {
+        Services.Configure<OpenIddictServerOptions>(options => options.EnableEndSessionRequestCaching = true);
+
+        return this;
+    }
 
     /// <summary>
     /// Enables status code pages integration support. Once enabled, errors
@@ -174,6 +185,7 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerAspNetCoreBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
@@ -190,6 +202,7 @@ public sealed class OpenIddictServerAspNetCoreBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
     public OpenIddictServerAspNetCoreBuilder SetEndSessionRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)

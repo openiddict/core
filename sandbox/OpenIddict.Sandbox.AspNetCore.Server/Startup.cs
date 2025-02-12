@@ -105,6 +105,7 @@ public class Startup
                        .SetEndSessionEndpointUris("connect/endsession")
                        .SetEndUserVerificationEndpointUris("connect/verify")
                        .SetIntrospectionEndpointUris("connect/introspect")
+                       .SetPushedAuthorizationEndpointUris("connect/par")
                        .SetRevocationEndpointUris("connect/revoke")
                        .SetTokenEndpointUris("connect/token")
                        .SetUserInfoEndpointUris("connect/userinfo");
@@ -124,9 +125,6 @@ public class Startup
                 // Register the signing and encryption credentials.
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
-
-                // Force client applications to use Proof Key for Code Exchange (PKCE).
-                options.RequireProofKeyForCodeExchange();
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 options.UseAspNetCore()

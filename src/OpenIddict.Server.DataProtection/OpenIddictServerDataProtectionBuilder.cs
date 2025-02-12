@@ -100,6 +100,13 @@ public sealed class OpenIddictServerDataProtectionBuilder
         => Configure(options => options.PreferDefaultDeviceCodeFormat = true);
 
     /// <summary>
+    /// Configures OpenIddict to use the default token format (JWT) when issuing new request tokens.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
+    public OpenIddictServerDataProtectionBuilder PreferDefaultRequestTokenFormat()
+        => Configure(options => options.PreferDefaultRequestTokenFormat = true);
+
+    /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new refresh tokens.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>

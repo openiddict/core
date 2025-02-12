@@ -14,7 +14,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create([
             /*
-             * DeviceAuthorization request processing:
+             * Device authorization request processing:
              */
             CreateHttpClient<PrepareDeviceAuthorizationRequestContext>.Descriptor,
             PreparePostHttpRequest<PrepareDeviceAuthorizationRequestContext>.Descriptor,
@@ -28,7 +28,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             DisposeHttpRequest<ApplyDeviceAuthorizationRequestContext>.Descriptor,
 
             /*
-             * DeviceAuthorization response processing:
+             * Device authorization response processing:
              */
             DecompressResponseContent<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ExtractJsonHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor,
