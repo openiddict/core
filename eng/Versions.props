@@ -8,7 +8,7 @@
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <PreReleaseBrandingLabel>Preview 1</PreReleaseBrandingLabel>
-    <StabilizePackageVersion Condition=" '$(StabilizePackageVersion)' == '' ">false</StabilizePackageVersion>
+    <StabilizePackageVersion Condition=" '$(StabilizePackageVersion)' == '' ">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition=" '$(StabilizePackageVersion)' == 'true' ">release</DotNetFinalVersionKind>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
