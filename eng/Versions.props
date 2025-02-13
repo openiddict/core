@@ -1,8 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <MajorVersion>7</MajorVersion>
-    <MinorVersion>0</MinorVersion>
+    <MajorVersion>6</MajorVersion>
+    <MinorVersion>1</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
