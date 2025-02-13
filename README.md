@@ -31,11 +31,14 @@ out-of-the-box and custom stores can be implemented to support other providers.
 **Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows**
 can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples).
 
-**Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/)**,
-which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
+**Developers looking for a simple and turnkey solution are strongly encouraged to evaluate these popular options**:
+  - [Volo.OpenIddict.Pro](https://abp.io/modules/Volo.OpenIddict.Pro), which is based on OpenIddict, supports all the common OAuth 2.0/OpenID Connect flows and offers a powerful applications/scopes management GUI.
+  - [OrchardCore.OpenId](https://docs.orchardcore.net/en/latest/docs/reference/modules/OpenId/), which is also based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
 
-**Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge, a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
-The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
+> [!TIP]
+> **Looking to integrate with a SAML2P Identity Provider (IDP) or Service Provider (SP)?** Rock Solid Knowledge,
+> a sponsor of OpenIddict, is developing a range of identity components to enhance your OpenIddict solution.
+> The first of these is their popular [SAML2P component](https://www.openiddictcomponents.com/?utm_source=openiddictgithubmain&utm_campaign=openiddict).
 
 --------------
 
